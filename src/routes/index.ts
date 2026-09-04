@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { getHello } from "../controllers/hello.controller.js";
+import bookRoutes from "./book.routes.js";
 
 const router = Router();
 
-router.get("/", getHello);
+router.use(bookRoutes);
 
 export default router;
