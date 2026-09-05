@@ -22,7 +22,7 @@ export async function createBook(req: Request, res: Response): Promise<void> {
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      message: "Internal server error",
+      message: "Internal Server Error",
     });
   }
 }
@@ -37,7 +37,7 @@ export async function getBooks(_req: Request, res: Response): Promise<void> {
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      message: "Internal server error",
+      message: "Internal Server Error",
     });
   }
 }
@@ -47,7 +47,7 @@ export async function updateBook(req: Request, res: Response): Promise<void> {
 
   if (id === null) {
     res.status(400).json({
-      message: "Geçersiz id",
+      message: "Invalid id",
     });
     return;
   }
@@ -69,14 +69,14 @@ export async function updateBook(req: Request, res: Response): Promise<void> {
   } catch (error) {
     if (isPrismaNotFound(error)) {
       res.status(404).json({
-        message: "Kayıt bulunamadı",
+        message: "Record not found",
       });
       return;
     }
 
     console.error(error);
     res.status(500).json({
-      message: "Internal server error",
+      message: "Internal Server Error",
     });
   }
 }
@@ -86,7 +86,7 @@ export async function deleteBook(req: Request, res: Response): Promise<void> {
 
   if (id === null) {
     res.status(400).json({
-      message: "Geçersiz id",
+      message: "Invalid id",
     });
     return;
   }
@@ -97,19 +97,19 @@ export async function deleteBook(req: Request, res: Response): Promise<void> {
     });
 
     res.status(200).json({
-      message: "Kayıt silindi",
+      message: "Record deleted",
     });
   } catch (error) {
     if (isPrismaNotFound(error)) {
       res.status(404).json({
-        message: "Kayıt bulunamadı",
+        message: "Record not found",
       });
       return;
     }
 
     console.error(error);
     res.status(500).json({
-      message: "Internal server error",
+      message: "Internal Server Error",
     });
   }
 }
