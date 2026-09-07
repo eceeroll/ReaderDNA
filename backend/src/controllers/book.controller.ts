@@ -42,6 +42,36 @@ export async function getBooks(_req: Request, res: Response): Promise<void> {
   }
 }
 
+export async function getBookById(req: Request, res: Response): Promise<void> {
+  const id = parseBookId(req);
+
+  if(id === null) {
+    res.status(400).json({
+      message: "Invalid id"
+    })
+    return;
+  }
+
+  try {
+    const book = await prisma.book.findUnique({where: {id}});
+
+    if(!book){
+      res.status(404).json({
+        message: "Record not found"
+      })
+      return;
+    }
+
+    res.status(200).json(book);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Internal Server Error"
+    })
+  }
+
+}
+
 export async function updateBook(req: Request, res: Response): Promise<void> {
   const id = parseBookId(req);
 
