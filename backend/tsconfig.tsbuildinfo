@@ -1,0 +1,1 @@
+{"root":["./src/app.ts","./src/index.ts","./src/controllers/book.controller.ts","./src/prisma/client.ts","./src/routes/book.routes.ts","./src/routes/index.ts","./src/schemas/book.schema.ts","./src/utils/http-responses.ts","./src/utils/parse-book-id.ts","./src/utils/prisma-errors.ts"],"version":"5.9.3"}
