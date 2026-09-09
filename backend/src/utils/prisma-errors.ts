@@ -6,3 +6,10 @@ export function isPrismaNotFound(error: unknown): boolean {
     error.code === "P2025"
   );
 }
+
+export function isPrismaDuplicate(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError && 
+    error.code === "P2002"
+  )
+}
