@@ -97,7 +97,7 @@ export async function loginUser(req: Request, res: Response): Promise<void> {
     );
 
     res.status(200).json({
-      message: "Login successfull",
+      message: "Login successful",
       token,
     });
   } catch (error) {

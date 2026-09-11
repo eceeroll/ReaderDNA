@@ -2,7 +2,7 @@
 
 ## Stack
 
-TypeScript + Node.js + Express + Prisma + SQLite + Zod.
+TypeScript + Node.js + Express + Prisma + PostgreSQL + Zod.
 
 ## HTTP responses
 
