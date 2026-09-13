@@ -9,12 +9,13 @@ datasource db {
 
 model Book {
   id               Int      @id @default(autoincrement())
+  googleBooksIs    String?  @unique
   title            String
   author           String
   genres           Json
-  pageCount        Int
-  publishedYear    Int
-  goodreadsRating  Float?
+  pageCount        Int?
+  publishedYear    Int?
+  averageRating    Float?
   createdAt        DateTime @default(now())
 }
 

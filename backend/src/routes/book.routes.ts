@@ -6,10 +6,12 @@ import {
   getBookById,
   updateBook,
 } from "../controllers/book.controller.js";
+import { searchGoogleBooks } from "../controllers/book-search.controller.js";
 
 const router = Router();
 
 router.get("/", getBooks);
+router.get("/search", searchGoogleBooks);
 router.get("/:id", getBookById);
 router.post("/", createBook);
 router.put("/:id", updateBook);
