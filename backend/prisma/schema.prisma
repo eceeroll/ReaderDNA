@@ -7,9 +7,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ReadStatus {
+  READ
+  WANT_TO_READ
+}
+
 model Book {
   id               Int      @id @default(autoincrement())
-  googleBooksIs    String?  @unique
+  googleBooksId    String?  @unique
   title            String
   author           String
   genres           Json
@@ -17,6 +22,7 @@ model Book {
   publishedYear    Int?
   averageRating    Float?
   createdAt        DateTime @default(now())
+  userBooks        UserBook[]
 }
 
 model User {
@@ -24,4 +30,18 @@ model User {
   email           String @unique
   hashedPassword  String
   createdAt       DateTime @default(now())
+  userBooks       UserBook[]
+}
+
+model UserBook {
+  id              Int @id @default(autoincrement())
+  userId          Int
+  bookId          Int 
+  status          ReadStatus
+  rating          Int?
+  addedAt         DateTime @default(now())
+  user            User @relation(fields: [userId], references: [id])
+  book            Book @relation(fields: [bookId], references: [id])
+
+  @@unique([userId,bookId])
 }
