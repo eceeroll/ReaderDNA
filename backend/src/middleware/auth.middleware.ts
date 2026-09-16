@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import type { AuthTokenPayload } from "../types/auth.types";
+import type { AuthTokenPayload } from "../types/auth.types.js";
 
 export function authenticateToken(
   req: Request,
