@@ -1,1 +1,55 @@
 @import "tailwindcss";
+
+@theme {
+  /* Fonts */
+  --font-sans: "Karla", sans-serif; /* becomes the default body font */
+  --font-display: "Fraunces", serif;
+  --font-accent: "Shantell Sans", cursive;
+
+  /* Colors — neutrals */
+  --color-page: #faf6ef;
+  --color-surface: #f3ecdd;
+  --color-line: #e4dbc7;
+  --color-ink: #2e2a24;
+  --color-ink-muted: #7a7264;
+
+  /* Colors — signature (lilac) */
+  --color-brand-tint: #f1ecfa;
+  --color-brand: #9b7fdb;
+  --color-brand-strong: #6b4fa8;
+
+  /* Colors — warm accent */
+  --color-warm-tint: #fbead1;
+  --color-warm: #e0954b;
+  --color-warm-strong: #a8672b;
+
+  /* Colors — semantic */
+  --color-success-tint: #eaf0e6;
+  --color-success: #7c9473;
+  --color-error-tint: #fbeae7;
+  --color-error: #c1584a;
+  --color-warning-tint: #fbf0dc;
+  --color-warning: #d9a441;
+
+  /* Radius — overrides Tailwind defaults with our scale */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Shadow — overrides Tailwind defaults (warm-tinted, replaces gray) */
+  --shadow-sm: 0 2px 8px rgba(46, 42, 36, 0.06);
+  --shadow-md: 0 6px 20px rgba(46, 42, 36, 0.1);
+  --shadow-lg: 0 12px 32px rgba(46, 42, 36, 0.14);
+
+  /* Easing */
+  --ease-soft: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@layer base {
+  body {
+    background-color: var(--color-page);
+    color: var(--color-ink);
+  }
+}
