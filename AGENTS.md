@@ -20,6 +20,12 @@ Helper functions live under `src/utils`. Controllers only orchestrate the reques
 
 Never run migrations automatically. Always ask for confirmation first.
 
+## Frontend design
+
+For any frontend/UI work, read frontend/DESIGN_SYSTEM.md before writing
+styles or components. Never use raw Tailwind defaults (gray-500, blue-600
+etc.) or arbitrary hex values — only tokens defined in the @theme block.
+
 ## Language
 
 The project is developed in English. Console messages, code, comments, and API response text must be English.
