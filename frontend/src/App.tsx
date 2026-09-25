@@ -1,16 +1,14 @@
-import { Button } from "./components/ui/Button";
+import { Routes, Route } from "react-router";
+import { Register } from "./pages/Register";
+import { Login } from "./pages/Login";
 
 function App() {
   return (
-    <div className="min-h-screen bg-page p-8">
-      <Button variant="primary">Add to library</Button>
-      <Button variant="secondary" className="ml-2">
-        Learn more
-      </Button>
-      <Button variant="ghost" className="ml-2">
-        Skip
-      </Button>
-    </div>
+    <Routes>
+      <Route path="/register" element={<Register />} />
+      <Route path="/login" element={<Login />} />
+    </Routes>
   );
 }
+
 export default App;
