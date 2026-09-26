@@ -5,39 +5,9 @@ import { ApiError } from "../lib/api-client";
 import { setToken } from "../lib/auth-storage";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
+import { FieldError } from "../components/ui/FieldError";
 import { Input } from "../components/ui/Input";
 import { PasswordInput } from "../components/ui/PasswordInput";
-
-function WarningIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className="shrink-0"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 8v4" />
-      <path d="M12 16h.01" />
-    </svg>
-  );
-}
-
-function FieldError({ message }: { message: string }) {
-  return (
-    <p className="mt-2 flex items-center gap-2 rounded-md bg-error-tint px-3 py-2 text-[13px] text-error">
-      <WarningIcon />
-      {message}
-    </p>
-  );
-}
 
 export function Login() {
   const navigate = useNavigate();
@@ -64,7 +34,7 @@ export function Login() {
     try {
       const response = await loginUser({ email, password });
       setToken(response.token);
-      navigate("/");
+      navigate("/discover");
     } catch (error) {
       if (error instanceof ApiError && error.issues) {
         const errors: Record<string, string> = {};
@@ -126,7 +96,9 @@ export function Login() {
               }}
               invalid={Boolean(fieldErrors.email)}
             />
-            {fieldErrors.email && <FieldError message={fieldErrors.email} />}
+            {fieldErrors.email && (
+              <FieldError className="mt-2" message={fieldErrors.email} />
+            )}
           </div>
 
           <div>
@@ -146,7 +118,7 @@ export function Login() {
               invalid={Boolean(fieldErrors.password)}
             />
             {fieldErrors.password && (
-              <FieldError message={fieldErrors.password} />
+              <FieldError className="mt-2" message={fieldErrors.password} />
             )}
           </div>
 

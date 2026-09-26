@@ -4,30 +4,9 @@ import { registerUser } from "../api/auth";
 import { ApiError } from "../lib/api-client";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
+import { FieldError } from "../components/ui/FieldError";
 import { Input } from "../components/ui/Input";
 import { PasswordInput } from "../components/ui/PasswordInput";
-
-function WarningIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className="shrink-0"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 8v4" />
-      <path d="M12 16h.01" />
-    </svg>
-  );
-}
 
 function SuccessIcon() {
   return (
@@ -46,15 +25,6 @@ function SuccessIcon() {
       <circle cx="12" cy="12" r="10" />
       <path d="M8 12l3 3 5-6" />
     </svg>
-  );
-}
-
-function FieldError({ message }: { message: string }) {
-  return (
-    <p className="mt-2 flex items-center gap-2 rounded-md bg-error-tint px-3 py-2 text-[13px] text-error">
-      <WarningIcon />
-      {message}
-    </p>
   );
 }
 
@@ -174,7 +144,9 @@ export function Register() {
                 }}
                 invalid={Boolean(fieldErrors.email)}
               />
-              {fieldErrors.email && <FieldError message={fieldErrors.email} />}
+              {fieldErrors.email && (
+                <FieldError className="mt-2" message={fieldErrors.email} />
+              )}
             </div>
 
             <div>
@@ -195,7 +167,7 @@ export function Register() {
                 invalid={Boolean(fieldErrors.password)}
               />
               {fieldErrors.password && (
-                <FieldError message={fieldErrors.password} />
+                <FieldError className="mt-2" message={fieldErrors.password} />
               )}
             </div>
 
@@ -216,7 +188,7 @@ export function Register() {
                 invalid={Boolean(fieldErrors.confirmPassword)}
               />
               {fieldErrors.confirmPassword && (
-                <FieldError message={fieldErrors.confirmPassword} />
+                <FieldError className="mt-2" message={fieldErrors.confirmPassword} />
               )}
             </div>
 
