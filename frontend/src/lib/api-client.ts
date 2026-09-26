@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios";
-import { getToken } from "./auth-storage";
+import { clearToken, readSessionToken } from "./auth-storage";
 
 const baseURL = import.meta.env.VITE_API_URL;
 
@@ -53,6 +53,14 @@ function isApiFieldIssueArray(value: unknown): value is ApiFieldIssue[] {
   );
 }
 
+function isTokenAuthFailure(error: ApiError): boolean {
+  return (
+    error.status === 401 &&
+    (error.message === "Invalid or expired token" ||
+      error.message === "No token provided")
+  );
+}
+
 function toApiError(error: unknown): ApiError {
   if (error instanceof AxiosError) {
     if (!error.response) {
@@ -84,7 +92,7 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = getToken();
+  const token = readSessionToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -93,5 +101,17 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => response,
-  (error: unknown) => Promise.reject(toApiError(error)),
+  (error: unknown) => {
+    const apiError = toApiError(error);
+
+    if (isTokenAuthFailure(apiError)) {
+      clearToken();
+      if (window.location.pathname !== "/login") {
+        window.location.replace("/login");
+      }
+      return new Promise(() => {});
+    }
+
+    return Promise.reject(apiError);
+  },
 );
