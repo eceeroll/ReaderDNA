@@ -6,8 +6,14 @@ import libraryRoutes from "./routes/library.routes.js";
 
 const app = express();
 
+const frontendUrl = process.env.FRONTEND_URL;
+
+if (!frontendUrl) {
+  throw new Error("FRONTEND_URL is not defined");
+}
+
 app.use(express.json());
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({ origin: frontendUrl }));
 
 app.use("/auth", authRoutes);
 app.use("/books", bookRoutes);

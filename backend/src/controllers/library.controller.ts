@@ -7,6 +7,36 @@ import { isPrismaDuplicate } from "../utils/prisma-errors.js";
 
 const GOOGLE_BOOKS_FETCH_TIMEOUT_MS = 10_000;
 
+export async function getLibrary(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const userId = req.user!.userId;
+
+  try {
+    const userBooks = await prisma.userBook.findMany({
+      where: { userId },
+      include: {
+        book: {
+          select: { googleBooksId: true },
+        },
+      },
+    });
+
+    const items = userBooks.flatMap((entry) => {
+      const googleBooksId = entry.book.googleBooksId;
+      return googleBooksId ? [googleBooksId] : [];
+    });
+
+    res.status(200).json({ items });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
+
 export async function addBookToLibrary(
   req: Request,
   res: Response,

@@ -26,3 +26,7 @@ export async function loginUser(data: {
   const response = await api.post<LoginResponse>("/auth/login", data);
   return response.data;
 }
+
+export async function getCurrentUser(): Promise<void> {
+  await api.get("/auth/me");
+}
