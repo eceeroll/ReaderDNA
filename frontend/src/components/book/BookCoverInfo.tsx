@@ -59,21 +59,19 @@ export function BookCoverInfo({
         {book.author}
       </p>
 
-      {(book.averageRating !== null || genre) && (
-        <div className="mt-3 flex items-center gap-2">
-          {book.averageRating !== null && (
-            <span className="inline-flex shrink-0 items-center gap-1 font-sans text-[13px] font-medium text-ink">
-              <StarIcon />
-              {book.averageRating.toFixed(1)}
-            </span>
-          )}
-          {genre && (
-            <span className="ml-auto min-w-0 truncate rounded-sm bg-surface px-2 py-1 font-sans text-[13px] text-ink-muted">
-              {genre}
-            </span>
-          )}
-        </div>
-      )}
+      <div className="mt-3 flex min-h-7 items-center gap-2">
+        {book.averageRating !== null && (
+          <span className="inline-flex shrink-0 items-center gap-1 font-sans text-[13px] font-medium text-ink">
+            <StarIcon />
+            {book.averageRating.toFixed(1)}
+          </span>
+        )}
+        {genre && (
+          <span className="ml-auto min-w-0 truncate rounded-sm bg-surface px-2 py-1 font-sans text-[13px] text-ink-muted">
+            {genre}
+          </span>
+        )}
+      </div>
     </>
   );
 }

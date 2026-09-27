@@ -4,8 +4,16 @@ import {
   searchBooks,
   type BookSearchResult,
 } from "../api/books";
-import { addBookToLibrary, getLibrary } from "../api/library";
-import { BookCard } from "../components/book/BookCard";
+import {
+  addBookToLibrary,
+  getLibrary,
+  updateLibraryEntry,
+  type ReadStatus,
+} from "../api/library";
+import {
+  BookCard,
+  type BookCardLibraryEntry,
+} from "../components/book/BookCard";
 import { Button } from "../components/ui/Button";
 import { FieldError } from "../components/ui/FieldError";
 import { Input } from "../components/ui/Input";
@@ -60,16 +68,20 @@ function SearchIcon() {
 
 function ShelfRow({
   shelf,
-  addingBookId,
-  addedBookIds,
+  updatingBookId,
+  ratingBookId,
+  libraryEntries,
   addError,
-  onAdd,
+  onStatusChange,
+  onRate,
 }: {
   shelf: ShelfState;
-  addingBookId: string | null;
-  addedBookIds: Set<string>;
+  updatingBookId: string | null;
+  ratingBookId: string | null;
+  libraryEntries: Map<string, BookCardLibraryEntry>;
   addError: { bookId: string; message: string } | null;
-  onAdd: (googleBooksId: string) => void;
+  onStatusChange: (googleBooksId: string, status: ReadStatus) => void;
+  onRate: (libraryEntryId: number, rating: number) => void;
 }) {
   return (
     <section aria-labelledby={`shelf-${shelf.id}`} aria-busy={shelf.isLoading}>
@@ -105,15 +117,17 @@ function ShelfRow({
               key={`${book.googleBooksId}-${index}`}
               book={book}
               compact
-              className="w-40 shrink-0 sm:w-44 lg:w-40"
-              isAdding={addingBookId === book.googleBooksId}
-              isAdded={addedBookIds.has(book.googleBooksId)}
+              className="w-48 shrink-0"
+              isUpdating={updatingBookId === book.googleBooksId}
+              isRating={ratingBookId === book.googleBooksId}
+              libraryEntry={libraryEntries.get(book.googleBooksId) ?? null}
               addError={
                 addError?.bookId === book.googleBooksId
                   ? addError.message
                   : null
               }
-              onAdd={onAdd}
+              onStatusChange={onStatusChange}
+              onRate={onRate}
             />
           ))}
         </div>
@@ -127,11 +141,13 @@ export function Discover() {
   const [searchResults, setSearchResults] = useState<BookSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
-  const [addingBookId, setAddingBookId] = useState<string | null>(null);
-  const addingBookIdRef = useRef<string | null>(null);
-  const [addedBookIds, setAddedBookIds] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [updatingBookId, setUpdatingBookId] = useState<string | null>(null);
+  const updatingBookIdRef = useRef<string | null>(null);
+  const [ratingBookId, setRatingBookId] = useState<string | null>(null);
+  const ratingBookIdRef = useRef<string | null>(null);
+  const [libraryEntries, setLibraryEntries] = useState<
+    Map<string, BookCardLibraryEntry>
+  >(() => new Map());
   const [addError, setAddError] = useState<{
     bookId: string;
     message: string;
@@ -148,10 +164,14 @@ export function Discover() {
           return;
         }
 
-        setAddedBookIds((current) => {
-          const next = new Set(current);
+        setLibraryEntries((current) => {
+          const next = new Map(current);
           for (const item of library.items) {
-            next.add(item.book.googleBooksId);
+            next.set(item.book.googleBooksId, {
+              id: item.id,
+              status: item.status,
+              rating: item.rating,
+            });
           }
           return next;
         });
@@ -239,35 +259,157 @@ export function Discover() {
     }
   }
 
-  async function handleAdd(googleBooksId: string) {
-    if (addingBookIdRef.current !== null || addedBookIds.has(googleBooksId)) {
+  function insertLibraryEntry(
+    googleBooksId: string,
+    entry: BookCardLibraryEntry,
+  ) {
+    setLibraryEntries((current) => {
+      const next = new Map(current);
+      next.set(googleBooksId, entry);
+      return next;
+    });
+  }
+
+  async function handleStatusChange(
+    googleBooksId: string,
+    status: ReadStatus,
+  ) {
+    if (updatingBookIdRef.current !== null) {
       return;
     }
 
-    addingBookIdRef.current = googleBooksId;
-    setAddingBookId(googleBooksId);
+    const existing = libraryEntries.get(googleBooksId);
+    updatingBookIdRef.current = googleBooksId;
+    setUpdatingBookId(googleBooksId);
     setAddError(null);
 
     try {
-      await addBookToLibrary({
-        googleBooksId,
-        status: "WANT_TO_READ",
-      });
-      setAddedBookIds((current) => new Set(current).add(googleBooksId));
-    } catch (error) {
-      if (error instanceof ApiError && error.status === 409) {
-        setAddedBookIds((current) => new Set(current).add(googleBooksId));
+      if (!existing) {
+        try {
+          const created = await addBookToLibrary({
+            googleBooksId,
+            status,
+          });
+          insertLibraryEntry(googleBooksId, {
+            id: created.id,
+            status: created.status,
+            rating: created.rating,
+          });
+        } catch (error) {
+          if (error instanceof ApiError && error.status === 409) {
+            try {
+              const library = await getLibrary();
+              const recovered = library.items.find(
+                (item) => item.book.googleBooksId === googleBooksId,
+              );
+              if (recovered) {
+                insertLibraryEntry(googleBooksId, {
+                  id: recovered.id,
+                  status: recovered.status,
+                  rating: recovered.rating,
+                });
+                return;
+              }
+            } catch {
+              // Fall through to the existing error message below.
+            }
+          }
+
+          const message =
+            error instanceof ApiError
+              ? error.message
+              : "Something went wrong. Please try again.";
+          setAddError({ bookId: googleBooksId, message });
+        }
         return;
       }
+
+      const previousStatus = existing.status;
+      setLibraryEntries((current) => {
+        const next = new Map(current);
+        const currentEntry = next.get(googleBooksId);
+        if (!currentEntry) {
+          return current;
+        }
+        next.set(googleBooksId, { ...currentEntry, status });
+        return next;
+      });
+
+      try {
+        await updateLibraryEntry(existing.id, { status });
+      } catch (error) {
+        setLibraryEntries((current) => {
+          const next = new Map(current);
+          const currentEntry = next.get(googleBooksId);
+          if (!currentEntry || currentEntry.id !== existing.id) {
+            return current;
+          }
+          next.set(googleBooksId, { ...currentEntry, status: previousStatus });
+          return next;
+        });
+
+        const message =
+          error instanceof ApiError
+            ? error.message
+            : "Something went wrong. Please try again.";
+        setAddError({ bookId: googleBooksId, message });
+      }
+    } finally {
+      updatingBookIdRef.current = null;
+      setUpdatingBookId(null);
+    }
+  }
+
+  async function handleRate(libraryEntryId: number, rating: number) {
+    if (ratingBookIdRef.current !== null) {
+      throw new Error("Unable to save rating");
+    }
+
+    const match = [...libraryEntries.entries()].find(
+      ([, entry]) => entry.id === libraryEntryId,
+    );
+    if (!match) {
+      throw new Error("Unable to save rating");
+    }
+
+    const [googleBooksId, entry] = match;
+    const previousRating = entry.rating;
+
+    ratingBookIdRef.current = googleBooksId;
+    setRatingBookId(googleBooksId);
+    setLibraryEntries((current) => {
+      const next = new Map(current);
+      const currentEntry = next.get(googleBooksId);
+      if (!currentEntry) {
+        return current;
+      }
+      next.set(googleBooksId, { ...currentEntry, rating });
+      return next;
+    });
+    setAddError(null);
+
+    try {
+      await updateLibraryEntry(libraryEntryId, { rating });
+    } catch (error) {
+      setLibraryEntries((current) => {
+        const next = new Map(current);
+        const currentEntry = next.get(googleBooksId);
+        if (!currentEntry || currentEntry.id !== libraryEntryId) {
+          return current;
+        }
+        next.set(googleBooksId, { ...currentEntry, rating: previousRating });
+        return next;
+      });
 
       const message =
         error instanceof ApiError
           ? error.message
           : "Something went wrong. Please try again.";
       setAddError({ bookId: googleBooksId, message });
+      throw error;
     } finally {
-      addingBookIdRef.current = null;
-      setAddingBookId(null);
+      ratingBookIdRef.current = null;
+      setRatingBookId(null);
     }
   }
 
@@ -350,7 +492,7 @@ export function Discover() {
             )}
 
             {searchResults.length > 0 && (
-              <ul className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
+              <ul className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
                 {searchResults.map((book, index) => (
                   <li
                     key={`${book.googleBooksId}-${index}`}
@@ -358,15 +500,19 @@ export function Discover() {
                   >
                     <BookCard
                       book={book}
-                      className="h-full"
-                      isAdding={addingBookId === book.googleBooksId}
-                      isAdded={addedBookIds.has(book.googleBooksId)}
+                      className="h-full p-4!"
+                      isUpdating={updatingBookId === book.googleBooksId}
+                      isRating={ratingBookId === book.googleBooksId}
+                      libraryEntry={
+                        libraryEntries.get(book.googleBooksId) ?? null
+                      }
                       addError={
                         addError?.bookId === book.googleBooksId
                           ? addError.message
                           : null
                       }
-                      onAdd={handleAdd}
+                      onStatusChange={handleStatusChange}
+                      onRate={handleRate}
                     />
                   </li>
                 ))}
@@ -384,10 +530,12 @@ export function Discover() {
               <ShelfRow
                 key={shelf.id}
                 shelf={shelf}
-                addingBookId={addingBookId}
-                addedBookIds={addedBookIds}
+                updatingBookId={updatingBookId}
+                ratingBookId={ratingBookId}
+                libraryEntries={libraryEntries}
                 addError={addError}
-                onAdd={handleAdd}
+                onStatusChange={handleStatusChange}
+                onRate={handleRate}
               />
             ))}
           </div>

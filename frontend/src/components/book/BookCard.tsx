@@ -1,48 +1,57 @@
 import clsx from "clsx";
+import { useEffect, useState } from "react";
 import type { BookSearchResult } from "../../api/books";
-import { Button } from "../ui/Button";
+import type { ReadStatus } from "../../api/library";
 import { Card } from "../ui/Card";
 import { FieldError } from "../ui/FieldError";
+import { LibraryMenu } from "../ui/LibraryMenu";
 import { BookCoverInfo } from "./BookCoverInfo";
+import { RateBookDialog } from "./RateBookDialog";
 
-function CheckIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className="shrink-0"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M8 12l3 3 5-6" />
-    </svg>
-  );
-}
+export type BookCardLibraryEntry = {
+  id: number;
+  status: ReadStatus;
+  rating: number | null;
+};
 
 export function BookCard({
   book,
-  isAdding,
-  isAdded,
+  isUpdating,
+  isRating,
+  libraryEntry,
   addError,
-  onAdd,
+  onStatusChange,
+  onRate,
   compact = false,
   className,
 }: {
   book: BookSearchResult;
-  isAdding: boolean;
-  isAdded: boolean;
+  isUpdating: boolean;
+  isRating: boolean;
+  libraryEntry: BookCardLibraryEntry | null;
   addError: string | null;
-  onAdd: (googleBooksId: string) => void;
+  onStatusChange: (googleBooksId: string, status: ReadStatus) => void;
+  onRate: (libraryEntryId: number, rating: number) => void | Promise<void>;
   compact?: boolean;
   className?: string;
 }) {
+  const [rateOpen, setRateOpen] = useState(false);
+
+  useEffect(() => {
+    if (rateOpen && addError && libraryEntry?.status !== "READ") {
+      setRateOpen(false);
+    }
+  }, [addError, libraryEntry?.status, rateOpen]);
+
+  function handleSelect(status: ReadStatus) {
+    if (libraryEntry?.status !== status) {
+      onStatusChange(book.googleBooksId, status);
+    }
+    if (status === "READ") {
+      setRateOpen(true);
+    }
+  }
+
   return (
     <Card
       variant="interactive"
@@ -55,28 +64,30 @@ export function BookCard({
       <BookCoverInfo book={book} compact={compact} />
 
       <div className={clsx("mt-auto", compact ? "pt-3" : "pt-4")}>
-        {isAdded ? (
-          <p className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-success-tint px-4 py-2 text-center font-sans text-[13px] text-success">
-            <CheckIcon />
-            In Your Library
-          </p>
-        ) : (
-          <Button
-            variant="secondary"
-            type="button"
-            className="w-full min-w-0 px-4!"
-            disabled={isAdding || !book.googleBooksId}
-            onClick={() => onAdd(book.googleBooksId)}
-          >
-            <span className="min-w-0 text-center whitespace-normal">
-              {isAdding ? "Adding..." : "Add to Library"}
-            </span>
-          </Button>
-        )}
+        <LibraryMenu
+          status={libraryEntry?.status ?? null}
+          disabled={isUpdating}
+          onSelect={handleSelect}
+        />
         {addError !== null && (
           <FieldError className="mt-2" message={addError} align="start" />
         )}
       </div>
+
+      <RateBookDialog
+        open={rateOpen}
+        initialRating={libraryEntry?.rating ?? null}
+        canSave={libraryEntry !== null}
+        isSaving={isRating}
+        onClose={() => setRateOpen(false)}
+        onSave={async (rating) => {
+          if (!libraryEntry) {
+            throw new Error("This book is not in your library yet.");
+          }
+          await onRate(libraryEntry.id, rating);
+          setRateOpen(false);
+        }}
+      />
     </Card>
   );
 }
