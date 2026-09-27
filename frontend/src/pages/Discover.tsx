@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { getDiscoverShelf, searchBooks, type BookSearchResult } from "../api/books";
-import { addBookToLibrary, getLibraryBookIds } from "../api/library";
+import {
+  getDiscoverShelf,
+  searchBooks,
+  type BookSearchResult,
+} from "../api/books";
+import { addBookToLibrary, getLibrary } from "../api/library";
 import { BookCard } from "../components/book/BookCard";
 import { Button } from "../components/ui/Button";
 import { FieldError } from "../components/ui/FieldError";
@@ -71,7 +75,7 @@ function ShelfRow({
     <section aria-labelledby={`shelf-${shelf.id}`} aria-busy={shelf.isLoading}>
       <h2
         id={`shelf-${shelf.id}`}
-        className="font-display text-2xl leading-[1.25] font-semibold text-ink"
+        className="font-display text-2xl leading-tight font-semibold text-ink"
       >
         {shelf.title}
       </h2>
@@ -105,7 +109,9 @@ function ShelfRow({
               isAdding={addingBookId === book.googleBooksId}
               isAdded={addedBookIds.has(book.googleBooksId)}
               addError={
-                addError?.bookId === book.googleBooksId ? addError.message : null
+                addError?.bookId === book.googleBooksId
+                  ? addError.message
+                  : null
               }
               onAdd={onAdd}
             />
@@ -123,7 +129,9 @@ export function Discover() {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [addingBookId, setAddingBookId] = useState<string | null>(null);
   const addingBookIdRef = useRef<string | null>(null);
-  const [addedBookIds, setAddedBookIds] = useState<Set<string>>(() => new Set());
+  const [addedBookIds, setAddedBookIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [addError, setAddError] = useState<{
     bookId: string;
     message: string;
@@ -134,16 +142,16 @@ export function Discover() {
   useEffect(() => {
     let active = true;
 
-    getLibraryBookIds()
-      .then((ids) => {
+    getLibrary()
+      .then((library) => {
         if (!active) {
           return;
         }
 
         setAddedBookIds((current) => {
           const next = new Set(current);
-          for (const id of ids) {
-            next.add(id);
+          for (const item of library.items) {
+            next.add(item.book.googleBooksId);
           }
           return next;
         });
@@ -325,7 +333,7 @@ export function Discover() {
       <main className="mx-auto max-w-6xl px-4 pt-10 pb-16 md:pt-16">
         {(isSearching || hasSearched) && (
           <section className="mb-16 md:mb-24" aria-live="polite">
-            <h2 className="font-display text-2xl leading-[1.25] font-semibold text-ink">
+            <h2 className="font-display text-2xl leading-tight font-semibold text-ink">
               From your search
             </h2>
 
@@ -344,7 +352,10 @@ export function Discover() {
             {searchResults.length > 0 && (
               <ul className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
                 {searchResults.map((book, index) => (
-                  <li key={`${book.googleBooksId}-${index}`} className="min-w-0">
+                  <li
+                    key={`${book.googleBooksId}-${index}`}
+                    className="min-w-0"
+                  >
                     <BookCard
                       book={book}
                       className="h-full"
@@ -365,7 +376,7 @@ export function Discover() {
         )}
 
         <div>
-          <h2 className="font-display text-2xl leading-[1.25] font-semibold text-ink">
+          <h2 className="font-display text-2xl leading-tight font-semibold text-ink">
             Browse the shelves
           </h2>
           <div className="mt-10 flex flex-col gap-16 md:gap-24">
