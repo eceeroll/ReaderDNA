@@ -20,15 +20,24 @@ export async function getLibrary(req: Request, res: Response): Promise<void> {
       where: { userId },
       include: {
         book: {
-          select: { googleBooksId: true },
+          select: {
+            googleBooksId: true,
+            title: true,
+            author: true,
+            coverImageUrl: true,
+            averageRating: true,
+            genres: true,
+          },
         },
       },
     });
 
-    const items = userBooks.flatMap((entry) => {
-      const googleBooksId = entry.book.googleBooksId;
-      return googleBooksId ? [googleBooksId] : [];
-    });
+    const items = userBooks.map((entry) => ({
+      id: entry.id,
+      status: entry.status,
+      rating: entry.rating,
+      book: entry.book,
+    }));
 
     res.status(200).json({ items });
   } catch (error) {
