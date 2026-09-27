@@ -1,16 +1,18 @@
 import type { Request, Response } from "express";
 import { prisma } from "../prisma/client.js";
-import { addToLibrarySchema } from "../schemas/library.schema.js";
+import {
+  addToLibrarySchema,
+  updateLibraryEntrySchema,
+} from "../schemas/library.schema.js";
 import { sendValidationError } from "../utils/http-responses.js";
 import { mapGoogleBookToSearchResult } from "../utils/map-google-book.js";
 import { isPrismaDuplicate } from "../utils/prisma-errors.js";
+import { parseBookId } from "../utils/parse-book-id.js";
+import { send } from "node:process";
 
 const GOOGLE_BOOKS_FETCH_TIMEOUT_MS = 10_000;
 
-export async function getLibrary(
-  req: Request,
-  res: Response,
-): Promise<void> {
+export async function getLibrary(req: Request, res: Response): Promise<void> {
   const userId = req.user!.userId;
 
   try {
@@ -120,6 +122,7 @@ export async function addBookToLibrary(
             pageCount: mapped.pageCount,
             publishedYear: mapped.publishedYear,
             averageRating: mapped.averageRating,
+            coverImageUrl: mapped.coverImageUrl,
           },
         });
       } catch (error) {
@@ -158,6 +161,56 @@ export async function addBookToLibrary(
 
       throw error;
     }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+}
+
+export async function updateLibraryEntry(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const bookId = parseBookId(req);
+
+  if (bookId === null) {
+    res.status(400).json({
+      message: "Invalid book id",
+    });
+    return;
+  }
+
+  const parsed = updateLibraryEntrySchema.safeParse(req.body);
+
+  if (!parsed.success) {
+    sendValidationError(res, parsed.error);
+    return;
+  }
+
+  const userId = req.user!.userId;
+
+  // Prisma treats `undefined` fields as "don't update" — status/rating
+  // being individually optional relies on this behavior.
+  const { status, rating } = parsed.data;
+
+  try {
+    const userBook = await prisma.userBook.findUnique({
+      where: { id: bookId },
+    });
+
+    if (!userBook || userBook.userId !== userId) {
+      res.status(404).json({ message: "Record not found" });
+      return;
+    }
+
+    const updatedUserBook = await prisma.userBook.update({
+      where: { id: bookId },
+      data: { status, rating },
+    });
+
+    res.status(200).json(updatedUserBook);
   } catch (error) {
     console.error(error);
     res.status(500).json({

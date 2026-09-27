@@ -21,6 +21,7 @@ model Book {
   pageCount        Int?
   publishedYear    Int?
   averageRating    Float?
+  coverImageUrl    String?
   createdAt        DateTime @default(now())
   userBooks        UserBook[]
 }
