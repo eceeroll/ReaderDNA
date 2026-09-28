@@ -64,21 +64,22 @@ function LibrarySection({
 
   return (
     <section>
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="min-w-0 font-display text-2xl leading-tight font-semibold text-ink">
-          {title} ({count})
-        </h2>
+      <h2>
         <button
           type="button"
           aria-expanded={open}
           aria-controls={panelId}
-          aria-label={open ? `Collapse ${title}` : `Expand ${title}`}
           onClick={onToggle}
-          className="flex size-11 shrink-0 items-center justify-center rounded-full border border-line bg-white text-ink hover:bg-surface focus-visible:shadow-[0_0_0_3px_var(--color-warm-tint)] focus-visible:outline-none motion-safe:transition-colors motion-safe:duration-250 motion-safe:ease-standard"
+          className="-mx-3 flex w-[calc(100%+1.5rem)] items-center justify-between gap-3 rounded-md px-3 py-1 text-left hover:bg-surface focus-visible:shadow-[0_0_0_3px_var(--color-warm-tint)] focus-visible:outline-none motion-safe:transition-colors motion-safe:duration-250 motion-safe:ease-standard"
         >
-          <SectionChevron open={open} />
+          <span className="min-w-0 font-display text-2xl leading-tight font-semibold text-ink">
+            {title} ({count})
+          </span>
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-line bg-white text-ink">
+            <SectionChevron open={open} />
+          </span>
         </button>
-      </div>
+      </h2>
       <div
         id={panelId}
         className={clsx(
