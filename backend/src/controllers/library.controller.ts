@@ -11,9 +11,13 @@ import { parseBookId } from "../utils/parse-book-id.js";
 const GOOGLE_BOOKS_FETCH_TIMEOUT_MS = 10_000;
 
 export async function getLibrary(req: Request, res: Response): Promise<void> {
-  const userId = req.user!.userId;
-
   try {
+    if (!req.user) {
+      throw new Error("Authenticated user is missing");
+    }
+
+    const userId = req.user.userId;
+
     const userBooks = await prisma.userBook.findMany({
       where: { userId },
       include: {
@@ -57,10 +61,15 @@ export async function addBookToLibrary(
     return;
   }
 
-  const userId = req.user!.userId;
   const { googleBooksId, status } = parsed.data;
 
   try {
+    if (!req.user) {
+      throw new Error("Authenticated user is missing");
+    }
+
+    const userId = req.user.userId;
+
     let book = await prisma.book.findUnique({
       where: { googleBooksId: googleBooksId },
     });
@@ -196,13 +205,17 @@ export async function updateLibraryEntry(
     return;
   }
 
-  const userId = req.user!.userId;
-
   // Prisma treats `undefined` fields as "don't update" — status/rating
   // being individually optional relies on this behavior.
   const { status, rating } = parsed.data;
 
   try {
+    if (!req.user) {
+      throw new Error("Authenticated user is missing");
+    }
+
+    const userId = req.user.userId;
+
     const userBook = await prisma.userBook.findUnique({
       where: { id: bookId },
     });
