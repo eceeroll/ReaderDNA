@@ -7,7 +7,7 @@ import {
 import { sendValidationError } from "../utils/http-responses.js";
 import { mapGoogleBookToSearchResult } from "../utils/map-google-book.js";
 import { isPrismaDuplicate } from "../utils/prisma-errors.js";
-import { parseBookId } from "../utils/parse-book-id.js";
+import { parseNumericIdParam } from "../utils/parse-numeric-id-param.js";
 const GOOGLE_BOOKS_FETCH_TIMEOUT_MS = 10_000;
 
 export async function getLibrary(req: Request, res: Response): Promise<void> {
@@ -189,7 +189,7 @@ export async function updateLibraryEntry(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const bookId = parseBookId(req);
+  const bookId = parseNumericIdParam(req);
 
   if (bookId === null) {
     res.status(400).json({

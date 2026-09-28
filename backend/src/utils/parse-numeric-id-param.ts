@@ -1,6 +1,6 @@
 import type { Request } from "express";
 
-export function parseBookId(req: Request): number | null {
+export function parseNumericIdParam(req: Request): number | null {
   const id = Number(req.params.id);
 
   if (Number.isNaN(id)) {

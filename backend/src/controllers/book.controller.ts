@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { prisma } from "../prisma/client.js";
 import { createBookSchema } from "../schemas/book.schema.js";
 import { sendValidationError } from "../utils/http-responses.js";
-import { parseBookId } from "../utils/parse-book-id.js";
+import { parseNumericIdParam } from "../utils/parse-numeric-id-param.js";
 import { isPrismaNotFound } from "../utils/prisma-errors.js";
 
 export async function createBook(req: Request, res: Response): Promise<void> {
@@ -43,7 +43,7 @@ export async function getBooks(_req: Request, res: Response): Promise<void> {
 }
 
 export async function getBookById(req: Request, res: Response): Promise<void> {
-  const id = parseBookId(req);
+  const id = parseNumericIdParam(req);
 
   if(id === null) {
     res.status(400).json({
@@ -73,7 +73,7 @@ export async function getBookById(req: Request, res: Response): Promise<void> {
 }
 
 export async function updateBook(req: Request, res: Response): Promise<void> {
-  const id = parseBookId(req);
+  const id = parseNumericIdParam(req);
 
   if (id === null) {
     res.status(400).json({
@@ -112,7 +112,7 @@ export async function updateBook(req: Request, res: Response): Promise<void> {
 }
 
 export async function deleteBook(req: Request, res: Response): Promise<void> {
-  const id = parseBookId(req);
+  const id = parseNumericIdParam(req);
 
   if (id === null) {
     res.status(400).json({
