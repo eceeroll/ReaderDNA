@@ -19,13 +19,13 @@ import { FieldError } from "../components/ui/FieldError";
 import { Input } from "../components/ui/Input";
 import { ApiError } from "../lib/api-client";
 
-const DISCOVERY_SHELVES = [
-  { id: "science-fiction", title: "Science Fiction" },
-  { id: "fantasy", title: "Fantasy" },
-  { id: "mystery-thriller", title: "Mystery & Thriller" },
-  { id: "horror", title: "Horror" },
-  { id: "romance", title: "Romance" },
-  { id: "historical-fiction", title: "Historical Fiction" },
+const DISCOVERY_SHELF_IDS = [
+  "science-fiction",
+  "fantasy",
+  "mystery-thriller",
+  "horror",
+  "romance",
+  "historical-fiction",
 ] as const;
 
 type ShelfState = {
@@ -37,9 +37,9 @@ type ShelfState = {
 };
 
 function createInitialShelves(): ShelfState[] {
-  return DISCOVERY_SHELVES.map((shelf) => ({
-    id: shelf.id,
-    title: shelf.title,
+  return DISCOVERY_SHELF_IDS.map((id) => ({
+    id,
+    title: "",
     items: [],
     isLoading: true,
     error: null,
@@ -186,8 +186,8 @@ export function Discover() {
   useEffect(() => {
     let active = true;
 
-    for (const shelf of DISCOVERY_SHELVES) {
-      getDiscoverShelf(shelf.id)
+    for (const id of DISCOVERY_SHELF_IDS) {
+      getDiscoverShelf(id)
         .then((result) => {
           if (!active) {
             return;
@@ -195,7 +195,7 @@ export function Discover() {
 
           setShelves((current) =>
             current.map((entry) =>
-              entry.id === shelf.id
+              entry.id === id
                 ? {
                     ...entry,
                     title: result.title,
@@ -219,7 +219,7 @@ export function Discover() {
 
           setShelves((current) =>
             current.map((entry) =>
-              entry.id === shelf.id
+              entry.id === id
                 ? { ...entry, isLoading: false, error: message }
                 : entry,
             ),
