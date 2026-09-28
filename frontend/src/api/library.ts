@@ -1,6 +1,6 @@
 import { api } from "../lib/api-client";
 
-export type ReadStatus = "READ" | "WANT_TO_READ";
+export type ReadStatus = "READ" | "WANT_TO_READ" | "CURRENTLY_READING";
 
 // Used to create and update library entries.
 export type UserBook = {

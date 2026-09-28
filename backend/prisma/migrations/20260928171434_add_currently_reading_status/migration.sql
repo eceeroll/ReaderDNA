@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "ReadStatus" ADD VALUE 'CURRENTLY_READING';

@@ -10,6 +10,7 @@ datasource db {
 enum ReadStatus {
   READ
   WANT_TO_READ
+  CURRENTLY_READING
 }
 
 model Book {

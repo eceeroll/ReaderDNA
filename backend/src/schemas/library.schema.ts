@@ -6,12 +6,12 @@ export const addToLibrarySchema = z.object({
     .trim()
     .min(1)
     .regex(/^[A-Za-z0-9_-]+$/, "Invalid Google Books ID format"),
-  status: z.enum(["READ", "WANT_TO_READ"]),
+  status: z.enum(["READ", "WANT_TO_READ", "CURRENTLY_READING"]),
 });
 
 export const updateLibraryEntrySchema = z
   .object({
-    status: z.enum(["READ", "WANT_TO_READ"]).optional(),
+    status: z.enum(["READ", "WANT_TO_READ", "CURRENTLY_READING"]).optional(),
     rating: z.number().int().min(1).max(5).optional(),
   })
   .refine((data) => data.status !== undefined || data.rating !== undefined, {
