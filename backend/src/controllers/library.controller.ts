@@ -189,11 +189,11 @@ export async function updateLibraryEntry(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const bookId = parseNumericIdParam(req);
+  const libraryEntryId = parseNumericIdParam(req);
 
-  if (bookId === null) {
+  if (libraryEntryId === null) {
     res.status(400).json({
-      message: "Invalid book id",
+      message: "Invalid library entry id",
     });
     return;
   }
@@ -217,16 +217,16 @@ export async function updateLibraryEntry(
     const userId = req.user.userId;
 
     const userBook = await prisma.userBook.findUnique({
-      where: { id: bookId },
+      where: { id: libraryEntryId, userId },
     });
 
-    if (!userBook || userBook.userId !== userId) {
+    if (!userBook) {
       res.status(404).json({ message: "Record not found" });
       return;
     }
 
     const updatedUserBook = await prisma.userBook.update({
-      where: { id: bookId },
+      where: { id: libraryEntryId, userId },
       data: { status, rating },
     });
 
