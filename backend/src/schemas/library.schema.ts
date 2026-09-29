@@ -16,7 +16,17 @@ export const updateLibraryEntrySchema = z
   })
   .refine((data) => data.status !== undefined || data.rating !== undefined, {
     message: "At least one of status or rating must be provided",
-  });
+  })
+  .refine(
+    (data) =>
+      data.rating === undefined ||
+      data.status === undefined ||
+      data.status === "READ",
+    {
+      message: "Rating is only allowed when status is READ",
+      path: ["rating"],
+    },
+  );
 
 export type UpdateLibraryEntryInput = z.infer<typeof updateLibraryEntrySchema>;
 export type AddToLibraryInput = z.infer<typeof addToLibrarySchema>;

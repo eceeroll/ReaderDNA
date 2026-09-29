@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { BookSearchResult } from "../../api/books";
 import type { ReadStatus } from "../../api/library";
 import { Card } from "../ui/Card";
@@ -36,12 +36,12 @@ export function BookCard({
   className?: string;
 }) {
   const [rateOpen, setRateOpen] = useState(false);
-
-  useEffect(() => {
-    if (rateOpen && addError && libraryEntry?.status !== "READ") {
-      setRateOpen(false);
-    }
-  }, [addError, libraryEntry?.status, rateOpen]);
+  const canRate =
+    libraryEntry !== null && libraryEntry.status === "READ";
+  // Keep the dialog open while a new READ add is in flight (entry still
+  // null), but hide it if recovery resolves to a non-READ status.
+  const rateDialogOpen =
+    rateOpen && (libraryEntry === null || libraryEntry.status === "READ");
 
   function handleSelect(status: ReadStatus) {
     if (libraryEntry?.status !== status) {
@@ -49,6 +49,8 @@ export function BookCard({
     }
     if (status === "READ") {
       setRateOpen(true);
+    } else {
+      setRateOpen(false);
     }
   }
 
@@ -75,13 +77,13 @@ export function BookCard({
       </div>
 
       <RateBookDialog
-        open={rateOpen}
+        open={rateDialogOpen}
         initialRating={libraryEntry?.rating ?? null}
-        canSave={libraryEntry !== null}
+        canSave={canRate}
         isSaving={isRating}
         onClose={() => setRateOpen(false)}
         onSave={async (rating) => {
-          if (!libraryEntry) {
+          if (!libraryEntry || libraryEntry.status !== "READ") {
             throw new Error("This book is not in your library yet.");
           }
           await onRate(libraryEntry.id, rating);

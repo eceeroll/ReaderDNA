@@ -205,8 +205,6 @@ export async function updateLibraryEntry(
     return;
   }
 
-  // Prisma treats `undefined` fields as "don't update" — status/rating
-  // being individually optional relies on this behavior.
   const { status, rating } = parsed.data;
 
   try {
@@ -225,9 +223,43 @@ export async function updateLibraryEntry(
       return;
     }
 
+    const nextStatus = status ?? userBook.status;
+
+    // Ratings are only valid while status is READ. Reject rating writes
+    // against any other status (including rating-only patches).
+    if (rating !== undefined && nextStatus !== "READ") {
+      res.status(400).json({
+        message: "Validation failed",
+        issues: [
+          {
+            path: ["rating"],
+            message: "Rating is only allowed when status is READ",
+          },
+        ],
+      });
+      return;
+    }
+
+    // Prisma treats `undefined` fields as "don't update".
+    // Leaving READ always clears rating so invalid combos cannot persist.
+    const data: {
+      status?: typeof status;
+      rating?: number | null;
+    } = {};
+
+    if (status !== undefined) {
+      data.status = status;
+    }
+
+    if (nextStatus !== "READ") {
+      data.rating = null;
+    } else if (rating !== undefined) {
+      data.rating = rating;
+    }
+
     const updatedUserBook = await prisma.userBook.update({
       where: { id: libraryEntryId, userId },
-      data: { status, rating },
+      data,
     });
 
     res.status(200).json(updatedUserBook);
