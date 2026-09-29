@@ -192,21 +192,8 @@
   }
 }
 
-/* Landing-only CTA — lilac, matches illustration accent */
-.landing-cta {
-  background-color: var(--color-brand);
-  padding-block: 0.9rem;
-  padding-inline: 2.25rem;
-  font-size: 1.0625rem;
-}
-
-.landing-cta:hover:not(:disabled) {
-  background-color: var(--color-brand-strong);
-  box-shadow: var(--shadow-sm);
-}
-
-/* Landing header — soft lavender Sign in pill */
-.landing-signin {
+/* Landing pill — shared Sign in / Get Started pattern */
+.landing-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -234,7 +221,7 @@
     transform 250ms var(--ease-soft);
 }
 
-.landing-signin:hover {
+.landing-pill:hover {
   background: linear-gradient(
     160deg,
     color-mix(in srgb, var(--color-brand) 88%, var(--color-brand-tint)) 0%,
@@ -247,14 +234,14 @@
   transform: translateY(-2px);
 }
 
-.landing-signin:active {
+.landing-pill:active {
   transform: translateY(1px);
   box-shadow:
     0 5px 16px color-mix(in srgb, var(--color-brand) 24%, transparent),
     0 1px 4px color-mix(in srgb, var(--color-brand) 12%, transparent);
 }
 
-.landing-signin:focus-visible {
+.landing-pill:focus-visible {
   outline: none;
   box-shadow:
     0 0 0 3px color-mix(in srgb, var(--color-brand) 34%, transparent),
@@ -262,7 +249,7 @@
 }
 
 @media (min-width: 768px) {
-  .landing-signin {
+  .landing-pill {
     font-size: 1.25rem;
     padding: 1.15rem 2.55rem;
   }

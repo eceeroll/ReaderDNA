@@ -1,6 +1,5 @@
 import { Link } from "react-router";
 import booklover from "../assets/booklover.svg";
-import { Button } from "../components/ui/Button";
 
 export function Landing() {
   return (
@@ -11,7 +10,7 @@ export function Landing() {
         <p className="font-display text-[2.125rem] leading-none text-ink md:text-4xl">
           ReaderDNA
         </p>
-        <Link to="/login" className="landing-signin">
+        <Link to="/login" className="landing-pill">
           Sign in
         </Link>
       </header>
@@ -28,10 +27,8 @@ export function Landing() {
               taste in books.
             </p>
             <div className="mt-8 md:mt-10">
-              <Link to="/register">
-                <Button variant="primary" type="button" className="landing-cta">
-                  Get Started
-                </Button>
+              <Link to="/register" className="landing-pill">
+                Get Started
               </Link>
             </div>
           </div>
