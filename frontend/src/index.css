@@ -45,6 +45,10 @@
   /* Easing */
   --ease-soft: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Soft decelerate — page reveal / page turn (no bounce/overshoot) */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Gentle start + long settle — page reveal pacing */
+  --ease-page-reveal: cubic-bezier(0.33, 0.05, 0.2, 1);
 
   /* Landing entrance — soft, understated */
   --animate-landing-rise: landing-rise 700ms var(--ease-soft) both;
@@ -69,6 +73,75 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+/*
+ * PageRevealStage — corner-turn.
+ * Incoming opens as a circle from the page corner; outgoing fades out early
+ * so the two forms never double-expose. Height is driven by React.
+ */
+@keyframes page-reveal-in-forward {
+  from {
+    opacity: 0;
+    clip-path: circle(0% at 100% 100%);
+  }
+  to {
+    opacity: 1;
+    clip-path: circle(160% at 100% 100%);
+  }
+}
+
+@keyframes page-reveal-in-reverse {
+  from {
+    opacity: 0;
+    clip-path: circle(0% at 0% 0%);
+  }
+  to {
+    opacity: 1;
+    clip-path: circle(160% at 0% 0%);
+  }
+}
+
+@keyframes page-reveal-out-forward {
+  0% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes page-reveal-out-reverse {
+  0% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes page-reveal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes page-reveal-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 
@@ -252,5 +325,268 @@
   .landing-pill {
     font-size: 1.25rem;
     padding: 1.15rem 2.55rem;
+  }
+}
+
+/* Auth split layout — shared Login/Register shell */
+.auth-shell {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  min-height: 100vh;
+  grid-template-areas:
+    "header"
+    "illustration"
+    "form";
+  grid-template-rows: auto auto 1fr;
+  background:
+    radial-gradient(
+      ellipse 62% 58% at 16% 52%,
+      color-mix(in srgb, var(--color-brand-tint) 55%, var(--color-brand) 45%),
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 50% 45% at 78% 58%,
+      color-mix(in srgb, var(--color-brand-tint) 55%, transparent),
+      transparent 74%
+    ),
+    linear-gradient(
+      118deg,
+      color-mix(in srgb, var(--color-brand-tint) 42%, var(--color-page)) 0%,
+      var(--color-page) 46%,
+      color-mix(in srgb, var(--color-page) 88%, var(--color-brand-tint) 12%) 100%
+    );
+}
+
+.auth-shell-wash {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(
+      ellipse 48% 42% at 22% 48%,
+      color-mix(in srgb, var(--color-brand) 18%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 36% 30% at 72% 36%,
+      color-mix(in srgb, var(--color-brand) 8%, transparent),
+      transparent 72%
+    );
+}
+
+.auth-header {
+  position: relative;
+  z-index: 2;
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  padding: 2.5rem 1.5rem 0.75rem;
+}
+
+.auth-illustration-pane {
+  position: relative;
+  z-index: 1;
+  grid-area: illustration;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  padding: 1rem 1.5rem 0.5rem;
+}
+
+/* Same ambient recipe as landing illustration glow — tokens only */
+.auth-illustration-glow {
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+  width: 130%;
+  height: 130%;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-brand-tint) 70%, var(--color-brand) 30%) 0%,
+    color-mix(in srgb, var(--color-brand) 16%, transparent) 40%,
+    transparent 68%
+  );
+  filter: blur(56px);
+  opacity: 0.85;
+}
+
+.auth-illustration {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 18rem;
+  height: auto;
+  user-select: none;
+  /* Soft edge dissolve into ambient wash — no hard canvas cut */
+  -webkit-mask-image: radial-gradient(
+    ellipse 88% 84% at 50% 50%,
+    #000 58%,
+    transparent 92%
+  );
+  mask-image: radial-gradient(
+    ellipse 88% 84% at 50% 50%,
+    #000 58%,
+    transparent 92%
+  );
+  filter: drop-shadow(
+    0 24px 40px color-mix(in srgb, var(--color-brand) 16%, transparent)
+  );
+}
+
+.auth-form-pane {
+  position: relative;
+  z-index: 1;
+  grid-area: form;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1.25rem 2.5rem;
+}
+
+/* Same soft brand blur used historically behind auth cards */
+.auth-form-ambient {
+  pointer-events: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 0;
+  height: 24rem;
+  width: 24rem;
+  translate: -50% -50%;
+  border-radius: 9999px;
+  background-color: color-mix(in srgb, var(--color-brand) 20%, transparent);
+  filter: blur(64px);
+}
+
+/* PageRevealStage — single clipped surface; height set imperatively while animating */
+.page-reveal-stage {
+  position: relative;
+  width: 100%;
+}
+
+.page-reveal-stage.is-animating {
+  overflow: hidden;
+}
+
+.page-reveal-layer {
+  width: 100%;
+}
+
+.page-reveal-stage.is-animating .page-reveal-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.page-reveal-layer--outgoing {
+  z-index: 1;
+  pointer-events: none;
+}
+
+.page-reveal-layer--incoming {
+  position: relative;
+  z-index: 2;
+}
+
+.page-reveal-stage.is-animating .page-reveal-layer--incoming {
+  position: absolute;
+}
+
+/* corner-turn — duration from --page-reveal-duration */
+.page-reveal-motion-in.is-forward {
+  animation: page-reveal-in-forward var(--page-reveal-duration, 600ms)
+    var(--ease-page-reveal) both;
+}
+
+.page-reveal-motion-in.is-reverse {
+  animation: page-reveal-in-reverse var(--page-reveal-duration, 600ms)
+    var(--ease-page-reveal) both;
+}
+
+.page-reveal-motion-out.is-forward {
+  animation: page-reveal-out-forward var(--page-reveal-duration, 600ms)
+    var(--ease-page-reveal) both;
+}
+
+.page-reveal-motion-out.is-reverse {
+  animation: page-reveal-out-reverse var(--page-reveal-duration, 600ms)
+    var(--ease-page-reveal) both;
+}
+
+.page-reveal-motion-fade-in {
+  animation: page-reveal-fade-in var(--page-reveal-duration, 180ms)
+    var(--ease-standard) both;
+}
+
+.page-reveal-motion-fade-out {
+  animation: page-reveal-fade-out var(--page-reveal-duration, 180ms)
+    var(--ease-standard) both;
+}
+
+@media (min-width: 768px) {
+  .auth-shell {
+    grid-template-areas:
+      "header header"
+      "illustration form";
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    grid-template-rows: auto 1fr;
+  }
+
+  .auth-header {
+    padding: 2.75rem 2.5rem 0;
+  }
+
+  .auth-illustration-pane {
+    padding: 1rem 2rem 2.5rem 2.5rem;
+  }
+
+  .auth-illustration {
+    max-width: 26rem;
+  }
+
+  .auth-form-pane {
+    padding: 1rem 2.5rem 2.5rem 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .auth-shell {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  }
+
+  .auth-header {
+    padding: 2.75rem 4rem 0;
+  }
+
+  .auth-illustration-pane {
+    padding: 1rem 2.5rem 3rem 4rem;
+  }
+
+  .auth-illustration {
+    max-width: 30rem;
+  }
+
+  .auth-form-pane {
+    padding: 1rem 4rem 3rem 2.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .auth-illustration-pane {
+    min-height: 0;
+    max-height: 42vh;
+  }
+
+  .auth-illustration {
+    max-height: 34vh;
+    width: auto;
   }
 }
