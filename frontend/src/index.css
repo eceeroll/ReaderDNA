@@ -195,9 +195,75 @@
 /* Landing-only CTA — lilac, matches illustration accent */
 .landing-cta {
   background-color: var(--color-brand);
+  padding-block: 0.9rem;
+  padding-inline: 2.25rem;
+  font-size: 1.0625rem;
 }
 
 .landing-cta:hover:not(:disabled) {
   background-color: var(--color-brand-strong);
   box-shadow: var(--shadow-sm);
+}
+
+/* Landing header — soft lavender Sign in pill */
+.landing-signin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: 0.015em;
+  line-height: 1;
+  color: var(--color-brand-strong);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--color-brand) 48%, var(--color-page)) 0%,
+    color-mix(in srgb, var(--color-brand) 36%, var(--color-brand-tint)) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--color-brand) 28%, transparent);
+  border-radius: 9999px;
+  padding: 0.95rem 2rem;
+  box-shadow:
+    0 10px 26px color-mix(in srgb, var(--color-brand) 24%, transparent),
+    0 3px 8px color-mix(in srgb, var(--color-brand) 12%, transparent);
+  transition:
+    background 250ms var(--ease-standard),
+    border-color 250ms var(--ease-standard),
+    box-shadow 250ms var(--ease-standard),
+    transform 250ms var(--ease-soft);
+}
+
+.landing-signin:hover {
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--color-brand) 58%, var(--color-page)) 0%,
+    color-mix(in srgb, var(--color-brand) 46%, var(--color-brand-tint)) 100%
+  );
+  border-color: color-mix(in srgb, var(--color-brand) 38%, transparent);
+  box-shadow:
+    0 12px 32px color-mix(in srgb, var(--color-brand) 30%, transparent),
+    0 4px 10px color-mix(in srgb, var(--color-brand) 14%, transparent);
+  transform: translateY(-2px);
+}
+
+.landing-signin:active {
+  transform: translateY(1px);
+  box-shadow:
+    0 4px 14px color-mix(in srgb, var(--color-brand) 20%, transparent),
+    0 1px 4px color-mix(in srgb, var(--color-brand) 10%, transparent);
+}
+
+.landing-signin:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--color-brand) 32%, transparent),
+    0 10px 26px color-mix(in srgb, var(--color-brand) 24%, transparent);
+}
+
+@media (min-width: 768px) {
+  .landing-signin {
+    font-size: 1.1875rem;
+    padding: 1.05rem 2.25rem;
+  }
 }
