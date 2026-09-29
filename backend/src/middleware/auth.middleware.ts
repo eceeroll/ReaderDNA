@@ -2,6 +2,8 @@ import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import type { AuthTokenPayload } from "../types/auth.types.js";
 
+const AUTH_TOKEN_INVALID = "AUTH_TOKEN_INVALID";
+
 export function authenticateToken(
   req: Request,
   res: Response,
@@ -11,14 +13,20 @@ export function authenticateToken(
     const authHeader = req.headers.authorization;
 
     if (!authHeader?.startsWith("Bearer ")) {
-      res.status(401).json({ message: "No token provided" });
+      res.status(401).json({
+        message: "No token provided",
+        code: AUTH_TOKEN_INVALID,
+      });
       return;
     }
 
     const token = authHeader.slice("Bearer ".length).trim();
 
     if (!token) {
-      res.status(401).json({ message: "No token provided" });
+      res.status(401).json({
+        message: "No token provided",
+        code: AUTH_TOKEN_INVALID,
+      });
       return;
     }
 
@@ -33,7 +41,10 @@ export function authenticateToken(
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
-      res.status(401).json({ message: "Invalid or expired token" });
+      res.status(401).json({
+        message: "Invalid or expired token",
+        code: AUTH_TOKEN_INVALID,
+      });
       return;
     }
 

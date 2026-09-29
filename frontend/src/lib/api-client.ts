@@ -14,18 +14,26 @@ export type ApiFieldIssue = {
 
 export class ApiError extends Error {
   readonly status: number;
+  readonly code?: string;
   readonly issues?: ApiFieldIssue[];
 
-  constructor(status: number, message: string, issues?: ApiFieldIssue[]) {
+  constructor(
+    status: number,
+    message: string,
+    issues?: ApiFieldIssue[],
+    code?: string,
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.code = code;
     this.issues = issues;
   }
 }
 
 type BackendErrorBody = {
   message: string;
+  code?: unknown;
   issues?: unknown;
 };
 
@@ -54,11 +62,7 @@ function isApiFieldIssueArray(value: unknown): value is ApiFieldIssue[] {
 }
 
 function isTokenAuthFailure(error: ApiError): boolean {
-  return (
-    error.status === 401 &&
-    (error.message === "Invalid or expired token" ||
-      error.message === "No token provided")
-  );
+  return error.status === 401 && error.code === "AUTH_TOKEN_INVALID";
 }
 
 function toApiError(error: unknown): ApiError {
@@ -73,7 +77,8 @@ function toApiError(error: unknown): ApiError {
       const issues = isApiFieldIssueArray(data.issues)
         ? data.issues
         : undefined;
-      return new ApiError(status, data.message, issues);
+      const code = typeof data.code === "string" ? data.code : undefined;
+      return new ApiError(status, data.message, issues, code);
     }
 
     return new ApiError(status, "Request failed");
