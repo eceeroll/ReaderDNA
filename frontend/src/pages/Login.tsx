@@ -1,3 +1,4 @@
+import { Heart } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { loginUser } from "../api/auth";
@@ -53,26 +54,24 @@ export function Login() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-page px-4">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand/20 blur-3xl"
-      />
-      <div className="relative w-full max-w-100">
-        <div className="mb-8 text-center">
-          <p className="font-display text-2xl text-brand">ReaderDNA</p>
-          <p className="mt-2 font-sans text-[16px] text-ink-muted">
-            Your reading, decoded.
+    <Card className="w-full shadow-md border-transparent">
+      <form noValidate onSubmit={handleSubmit} className="flex flex-col">
+        <div className="mb-8">
+          <h1 className="flex items-center gap-2 font-display text-2xl leading-tight font-semibold text-ink">
+            <Heart
+              size={20}
+              strokeWidth={0}
+              aria-hidden
+              className="shrink-0 fill-brand text-brand"
+            />
+            Welcome back
+          </h1>
+          <p className="mt-2 font-sans text-[15px] text-ink-muted">
+            Continue your reading journey
           </p>
         </div>
-        <Card className="w-full shadow-md border-transparent">
-          <form
-          noValidate
-          onSubmit={handleSubmit}
-          className="flex flex-col gap-6"
-        >
-          <h1 className="font-display text-ink text-2xl">Welcome back</h1>
 
+        <div className="flex flex-col gap-6">
           {formError !== null && (
             <p className="bg-error-tint text-error rounded-md p-3">
               {formError}
@@ -137,9 +136,8 @@ export function Login() {
               Create your account
             </Link>
           </p>
-          </form>
-        </Card>
-      </div>
-    </div>
+        </div>
+      </form>
+    </Card>
   );
 }

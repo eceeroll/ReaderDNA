@@ -17,6 +17,7 @@ import {
 import { Button } from "../components/ui/Button";
 import { FieldError } from "../components/ui/FieldError";
 import { Input } from "../components/ui/Input";
+import { Search } from "lucide-react";
 import { ApiError } from "../lib/api-client";
 
 const DISCOVERY_SHELF_IDS = [
@@ -44,26 +45,6 @@ function createInitialShelves(): ShelfState[] {
     isLoading: true,
     error: null,
   }));
-}
-
-function SearchIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="11" cy="11" r="7" />
-      <path d="M20 20l-3.5-3.5" />
-    </svg>
-  );
 }
 
 function ShelfRow({
@@ -325,13 +306,19 @@ export function Discover() {
       }
 
       const previousStatus = existing.status;
+      const previousRating = existing.rating;
+      const nextRating = status === "READ" ? existing.rating : null;
       setLibraryEntries((current) => {
         const next = new Map(current);
         const currentEntry = next.get(googleBooksId);
         if (!currentEntry) {
           return current;
         }
-        next.set(googleBooksId, { ...currentEntry, status });
+        next.set(googleBooksId, {
+          ...currentEntry,
+          status,
+          rating: nextRating,
+        });
         return next;
       });
 
@@ -344,7 +331,11 @@ export function Discover() {
           if (!currentEntry || currentEntry.id !== existing.id) {
             return current;
           }
-          next.set(googleBooksId, { ...currentEntry, status: previousStatus });
+          next.set(googleBooksId, {
+            ...currentEntry,
+            status: previousStatus,
+            rating: previousRating,
+          });
           return next;
         });
 
@@ -373,6 +364,10 @@ export function Discover() {
     }
 
     const [googleBooksId, entry] = match;
+    if (entry.status !== "READ") {
+      throw new Error("Unable to save rating");
+    }
+
     const previousRating = entry.rating;
 
     ratingBookIdRef.current = googleBooksId;
@@ -446,7 +441,9 @@ export function Discover() {
                   type="search"
                   value={searchQuery}
                   placeholder="The Night Circus, or Kazuo Ishiguro"
-                  leadingIcon={<SearchIcon />}
+                  leadingIcon={
+                    <Search size={16} strokeWidth={1.75} aria-hidden />
+                  }
                   onChange={(event) => {
                     setSearchQuery(event.target.value);
                     setSearchError(null);

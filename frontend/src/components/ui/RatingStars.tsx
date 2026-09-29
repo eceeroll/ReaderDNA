@@ -1,3 +1,4 @@
+import { Star } from "lucide-react";
 import clsx from "clsx";
 import { useState } from "react";
 
@@ -11,18 +12,18 @@ function StarIcon({
   size: "sm" | "md" | "lg";
 }) {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
+    <Star
+      strokeWidth={1.75}
+      aria-hidden
       className={clsx(
         size === "lg" ? "size-11" : size === "md" ? "size-5" : "size-3.5",
-        filled ? "text-warm" : size === "lg" ? "text-warm/30" : "text-ink-muted",
+        filled
+          ? "fill-current text-warm"
+          : size === "lg"
+            ? "text-warm/30"
+            : "text-ink-muted",
       )}
-    >
-      <path d="M12 3.2l2.4 5.4 5.9.6-4.4 3.9 1.3 5.7L12 16.2 6.8 18.8l1.3-5.7L3.7 9.2l5.9-.6L12 3.2z" />
-    </svg>
+    />
   );
 }
 

@@ -1,3 +1,4 @@
+import { Star } from "lucide-react";
 import clsx from "clsx";
 
 export type BookCoverInfoBook = {
@@ -7,22 +8,6 @@ export type BookCoverInfoBook = {
   averageRating: number | null;
   genres: string[];
 };
-
-function StarIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-      className="text-warm"
-    >
-      <path d="M12 3.2l2.4 5.4 5.9.6-4.4 3.9 1.3 5.7L12 16.2 6.8 18.8l1.3-5.7L3.7 9.2l5.9-.6L12 3.2z" />
-    </svg>
-  );
-}
 
 export function BookCoverInfo({
   book,
@@ -62,7 +47,12 @@ export function BookCoverInfo({
       <div className="mt-3 flex min-h-7 items-center gap-2">
         {book.averageRating !== null && (
           <span className="inline-flex shrink-0 items-center gap-1 font-sans text-[13px] font-medium text-ink">
-            <StarIcon />
+            <Star
+              size={14}
+              strokeWidth={1.75}
+              aria-hidden
+              className="fill-current text-warm"
+            />
             {book.averageRating.toFixed(1)}
           </span>
         )}

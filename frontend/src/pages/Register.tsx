@@ -1,3 +1,4 @@
+import { CircleCheck } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import { registerUser } from "../api/auth";
@@ -7,26 +8,6 @@ import { Card } from "../components/ui/Card";
 import { FieldError } from "../components/ui/FieldError";
 import { Input } from "../components/ui/Input";
 import { PasswordInput } from "../components/ui/PasswordInput";
-
-function SuccessIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M8 12l3 3 5-6" />
-    </svg>
-  );
-}
 
 export function Register() {
   const [email, setEmail] = useState("");
@@ -78,49 +59,39 @@ export function Register() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-page px-4">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand/20 blur-3xl"
-      />
-      <div className="relative w-full max-w-100">
-        <div className="mb-8 text-center">
-          <p className="font-display text-2xl text-brand">ReaderDNA</p>
-          <p className="mt-2 font-sans text-[16px] text-ink-muted">
-            Your reading, decoded.
-          </p>
-        </div>
-        <Card className="w-full shadow-md border-transparent">
-          {registered ? (
-          <div className="flex flex-col gap-6">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success-tint text-success">
-              <SuccessIcon />
-            </div>
-            <div>
-              <h1 className="font-display text-2xl text-ink">
-                Account created!
-              </h1>
-              <p className="mt-2 font-sans text-[15px] text-ink-muted">
-                Registration was successful. You can now sign in to start
-                building your library.
-              </p>
-            </div>
-            <Link to="/login" className="w-full">
-              <Button variant="primary" type="button" className="w-full">
-                Sign in
-              </Button>
-            </Link>
+    <Card className="w-full shadow-md border-transparent">
+      {registered ? (
+        <div className="flex flex-col gap-6">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success-tint text-success">
+            <CircleCheck size={24} strokeWidth={1.75} aria-hidden />
           </div>
-        ) : (
-          <form
-            noValidate
-            onSubmit={handleSubmit}
-            className="flex flex-col gap-6"
-          >
-            <h1 className="font-display text-ink text-2xl">
+          <div>
+            <h1 className="font-display text-2xl leading-tight font-semibold text-ink">
+              Account created!
+            </h1>
+            <p className="mt-2 font-sans text-[15px] text-ink-muted">
+              Registration was successful. You can now sign in to start building
+              your library.
+            </p>
+          </div>
+          <Link to="/login" className="w-full">
+            <Button variant="primary" type="button" className="w-full">
+              Sign in
+            </Button>
+          </Link>
+        </div>
+      ) : (
+        <form noValidate onSubmit={handleSubmit} className="flex flex-col">
+          <div className="mb-8">
+            <h1 className="font-display text-2xl leading-tight font-semibold text-ink">
               Create your account
             </h1>
+            <p className="mt-2 font-sans text-[15px] text-ink-muted">
+              Start discovering your ReaderDNA.
+            </p>
+          </div>
 
+          <div className="flex flex-col gap-6">
             {formError !== null && (
               <p className="bg-error-tint text-error rounded-md p-3">
                 {formError}
@@ -188,7 +159,10 @@ export function Register() {
                 invalid={Boolean(fieldErrors.confirmPassword)}
               />
               {fieldErrors.confirmPassword && (
-                <FieldError className="mt-2" message={fieldErrors.confirmPassword} />
+                <FieldError
+                  className="mt-2"
+                  message={fieldErrors.confirmPassword}
+                />
               )}
             </div>
 
@@ -200,10 +174,16 @@ export function Register() {
             >
               {loading ? "Creating account..." : "Register"}
             </Button>
-          </form>
-          )}
-        </Card>
-      </div>
-    </div>
+
+            <p className="font-sans text-[15px] text-ink-muted">
+              Already have an account?{" "}
+              <Link to="/login" className="text-ink">
+                Sign in
+              </Link>
+            </p>
+          </div>
+        </form>
+      )}
+    </Card>
   );
 }

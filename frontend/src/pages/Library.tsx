@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router";
@@ -27,23 +28,15 @@ function errorMessage(error: unknown): string {
 
 function SectionChevron({ open }: { open: boolean }) {
   return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
+    <ChevronDown
+      size={20}
+      strokeWidth={1.75}
+      aria-hidden
       className={clsx(
         "size-5 shrink-0 text-ink-muted motion-safe:transition-transform motion-safe:duration-250 motion-safe:ease-soft",
         open && "rotate-180",
       )}
-    >
-      <path d="M6 9l6 6 6-6" />
-    </svg>
+    />
   );
 }
 
@@ -149,12 +142,15 @@ export function Library() {
     }
 
     const previousStatus = current.status;
+    const previousRating = current.rating;
+    const nextRating = status === "READ" ? current.rating : null;
     updatingEntryIdRef.current = id;
     setUpdatingEntryId(id);
     setOpenSections((sections) => ({ ...sections, [status]: true }));
     setItems((list) =>
-      list?.map((item) => (item.id === id ? { ...item, status } : item)) ??
-      null,
+      list?.map((item) =>
+        item.id === id ? { ...item, status, rating: nextRating } : item,
+      ) ?? null,
     );
     setActionError(null);
 
@@ -163,7 +159,9 @@ export function Library() {
     } catch (error) {
       setItems((list) =>
         list?.map((item) =>
-          item.id === id ? { ...item, status: previousStatus } : item,
+          item.id === id
+            ? { ...item, status: previousStatus, rating: previousRating }
+            : item,
         ) ?? null,
       );
       setActionError({ id, message: errorMessage(error) });
@@ -179,7 +177,7 @@ export function Library() {
     }
 
     const current = items?.find((item) => item.id === id);
-    if (!current) {
+    if (!current || current.status !== "READ") {
       throw new Error("Unable to save rating");
     }
 

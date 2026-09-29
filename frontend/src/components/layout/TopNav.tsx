@@ -1,3 +1,4 @@
+import { User } from "lucide-react";
 import clsx from "clsx";
 import { NavLink, useNavigate } from "react-router";
 import { clearToken } from "../../lib/auth-storage";
@@ -7,26 +8,6 @@ const links = [
   { to: "/library", label: "Library" },
   { to: "/reader-dna", label: "Reader DNA" },
 ] as const;
-
-function UserIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="8" r="3.25" />
-      <path d="M5.5 19.25a6.5 6.5 0 0 1 13 0" />
-    </svg>
-  );
-}
 
 export function TopNav() {
   const navigate = useNavigate();
@@ -64,7 +45,7 @@ export function TopNav() {
           onClick={handleAvatarClick}
           className="flex h-9 w-9 items-center justify-center rounded-full bg-surface text-ink-muted"
         >
-          <UserIcon />
+          <User size={16} strokeWidth={1.75} aria-hidden />
         </button>
       </div>
     </header>
