@@ -2,9 +2,9 @@
 
 @theme {
   /* Fonts */
-  --font-sans: "Karla", sans-serif; /* becomes the default body font */
-  --font-display: "Fraunces", serif;
-  --font-accent: "Shantell Sans", cursive;
+  --font-sans: "Karla", sans-serif; /* body + mini headings */
+  --font-display: "Parkinsans", sans-serif; /* app display headings */
+  --font-landing: "Fraunces", serif; /* landing hero title only */
 
   /* Colors — neutrals */
   --color-page: #faf6ef;
@@ -45,6 +45,31 @@
   /* Easing */
   --ease-soft: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Landing entrance — soft, understated */
+  --animate-landing-rise: landing-rise 700ms var(--ease-soft) both;
+  --animate-landing-rise-delayed: landing-rise 800ms var(--ease-soft) 120ms both;
+  --animate-landing-glow: landing-glow 900ms var(--ease-standard) both;
+}
+
+@keyframes landing-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landing-glow {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @layer base {
@@ -52,4 +77,127 @@
     background-color: var(--color-page);
     color: var(--color-ink);
   }
+}
+
+/* Landing — layered gradient + ambient shadow (scoped; other pages untouched) */
+.landing-hero {
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse 80% 75% at 92% 48%,
+      color-mix(in srgb, var(--color-brand-tint) 55%, var(--color-brand) 45%),
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 60% 55% at 70% 55%,
+      var(--color-brand-tint),
+      transparent 75%
+    ),
+    radial-gradient(
+      ellipse 50% 45% at 5% 90%,
+      color-mix(in srgb, var(--color-surface) 50%, var(--color-brand-tint) 50%),
+      transparent 70%
+    ),
+    linear-gradient(
+      105deg,
+      color-mix(in srgb, var(--color-page) 78%, var(--color-brand-tint) 22%) 0%,
+      color-mix(in srgb, var(--color-page) 55%, var(--color-brand-tint) 45%) 42%,
+      color-mix(in srgb, var(--color-brand-tint) 70%, var(--color-page) 30%) 72%,
+      color-mix(in srgb, var(--color-brand-tint) 85%, var(--color-brand) 15%) 100%
+    );
+  box-shadow:
+    inset 0 0 160px color-mix(in srgb, var(--color-brand) 16%, transparent),
+    inset 0 -72px 110px color-mix(in srgb, var(--color-surface) 40%, transparent);
+}
+
+.landing-hero-wash {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(
+      ellipse 65% 60% at 82% 52%,
+      color-mix(in srgb, var(--color-brand) 20%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 40% 32% at 16% 20%,
+      color-mix(in srgb, var(--color-warm-tint) 28%, transparent),
+      transparent 75%
+    );
+}
+
+.landing-illustration-stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+}
+
+@media (min-width: 768px) {
+  .landing-illustration-stage {
+    justify-content: flex-end;
+  }
+}
+
+.landing-illustration-glow {
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+  width: 130%;
+  height: 130%;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-brand-tint) 70%, var(--color-brand) 30%) 0%,
+    color-mix(in srgb, var(--color-brand) 16%, transparent) 40%,
+    transparent 68%
+  );
+  filter: blur(56px);
+  opacity: 0.85;
+}
+
+.landing-illustration {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 20rem;
+  user-select: none;
+  filter: drop-shadow(
+    0 24px 40px color-mix(in srgb, var(--color-brand) 16%, transparent)
+  );
+}
+
+@media (min-width: 768px) {
+  .landing-illustration {
+    max-width: 24rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .landing-illustration {
+    max-width: 28rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-illustration-glow {
+    animation: landing-glow 900ms var(--ease-standard) both;
+  }
+}
+
+/* Landing-only CTA — lilac, matches illustration accent */
+.landing-cta {
+  background-color: var(--color-brand);
+}
+
+.landing-cta:hover:not(:disabled) {
+  background-color: var(--color-brand-strong);
+  box-shadow: var(--shadow-sm);
 }

@@ -113,7 +113,7 @@ export function RateBookDialog({
         </button>
         <h2
           id={titleId}
-          className="text-center font-display text-2xl leading-tight font-semibold text-ink"
+          className="text-center font-sans text-2xl leading-tight font-semibold text-ink"
         >
           Rate this book
         </h2>

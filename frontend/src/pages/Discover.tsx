@@ -87,7 +87,7 @@ function ShelfRow({
     <section aria-labelledby={`shelf-${shelf.id}`} aria-busy={shelf.isLoading}>
       <h2
         id={`shelf-${shelf.id}`}
-        className="font-display text-2xl leading-tight font-semibold text-ink"
+        className="font-sans text-2xl leading-tight font-semibold text-ink"
       >
         {shelf.title}
       </h2>
@@ -427,7 +427,7 @@ export function Discover() {
             <h1 className="font-display text-[32px] leading-[1.2] font-semibold text-ink">
               Find a book for your shelf
             </h1>
-            <p className="mt-2 font-accent text-[16px] leading-[1.4] text-ink-muted">
+            <p className="mt-2 font-sans text-[16px] leading-[1.4] text-ink-muted">
               A quiet corner to wander the shelves.
             </p>
           </div>
@@ -475,7 +475,7 @@ export function Discover() {
       <main className="mx-auto max-w-6xl px-4 pt-10 pb-16 md:pt-16">
         {(isSearching || hasSearched) && (
           <section className="mb-16 md:mb-24" aria-live="polite">
-            <h2 className="font-display text-2xl leading-tight font-semibold text-ink">
+            <h2 className="font-sans text-2xl leading-tight font-semibold text-ink">
               From your search
             </h2>
 
@@ -522,7 +522,7 @@ export function Discover() {
         )}
 
         <div>
-          <h2 className="font-display text-2xl leading-tight font-semibold text-ink">
+          <h2 className="font-sans text-2xl leading-tight font-semibold text-ink">
             Browse the shelves
           </h2>
           <div className="mt-10 flex flex-col gap-16 md:gap-24">

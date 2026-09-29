@@ -72,7 +72,7 @@ function LibrarySection({
           onClick={onToggle}
           className="-mx-3 flex w-[calc(100%+1.5rem)] items-center justify-between gap-3 rounded-md px-3 py-1 text-left hover:bg-surface focus-visible:shadow-[0_0_0_3px_var(--color-warm-tint)] focus-visible:outline-none motion-safe:transition-colors motion-safe:duration-250 motion-safe:ease-standard"
         >
-          <span className="min-w-0 font-display text-2xl leading-tight font-semibold text-ink">
+          <span className="min-w-0 font-sans text-2xl leading-tight font-semibold text-ink">
             {title} ({count})
           </span>
           <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-line bg-white text-ink">

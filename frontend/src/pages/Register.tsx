@@ -86,7 +86,7 @@ export function Register() {
       <div className="relative w-full max-w-100">
         <div className="mb-8 text-center">
           <p className="font-display text-2xl text-brand">ReaderDNA</p>
-          <p className="mt-2 font-accent text-[16px] text-ink-muted">
+          <p className="mt-2 font-sans text-[16px] text-ink-muted">
             Your reading, decoded.
           </p>
         </div>

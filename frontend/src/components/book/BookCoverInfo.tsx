@@ -49,7 +49,7 @@ export function BookCoverInfo({
 
       <h3
         className={clsx(
-          "line-clamp-2 font-display leading-snug font-semibold text-ink",
+          "line-clamp-2 font-sans leading-snug font-semibold text-ink",
           compact ? "mt-3 min-h-11 text-base" : "mt-4 min-h-12 text-lg",
         )}
       >
