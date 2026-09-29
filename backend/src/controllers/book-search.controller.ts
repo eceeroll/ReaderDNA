@@ -1,9 +1,18 @@
 import type { Request, Response } from "express";
 import { sendValidationError } from "../utils/http-responses.js";
-import { mapGoogleBookToSearchResult } from "../utils/map-google-book.js";
+import {
+  hasRequiredGoogleBookFields,
+  mapGoogleBookToSearchResult,
+} from "../utils/map-google-book.js";
 import { searchQuerySchema } from "../schemas/book-search-schema.js";
 
 const GOOGLE_BOOKS_SEARCH_TIMEOUT_MS = 10_000;
+
+function toGoogleBooksIntitleQuery(query: string): string {
+  // Keep the phrase quoted; escape embedded quotes so they cannot break syntax.
+  const escaped = query.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
+  return `intitle:"${escaped}"`;
+}
 
 export async function searchGoogleBooks(
   req: Request,
@@ -29,7 +38,7 @@ export async function searchGoogleBooks(
 
   try {
     const url = new URL("https://www.googleapis.com/books/v1/volumes");
-    url.searchParams.set("q", `intitle:"${query}"`);
+    url.searchParams.set("q", toGoogleBooksIntitleQuery(query));
     url.searchParams.set("langRestrict", "en");
     url.searchParams.set("maxResults", "20");
     url.searchParams.set("key", apiKey);
@@ -48,7 +57,10 @@ export async function searchGoogleBooks(
     const items = Array.isArray(data.items)
       ? data.items
           .map(mapGoogleBookToSearchResult)
-          .filter((book) => book.language === "en")
+          .filter(
+            (book) =>
+              hasRequiredGoogleBookFields(book) && book.language === "en",
+          )
       : [];
 
     res.status(200).json({ items });

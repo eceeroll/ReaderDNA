@@ -1,4 +1,7 @@
-import { mapGoogleBookToSearchResult } from "./map-google-book.js";
+import {
+  hasRequiredGoogleBookFields,
+  mapGoogleBookToSearchResult,
+} from "./map-google-book.js";
 import type { GoogleBookSearchResult } from "../types/google-books-types.js";
 
 const CACHE_TTL_MS = 60 * 60 * 1000;
@@ -123,7 +126,10 @@ function mapShelfItems(items: unknown[]): GoogleBookSearchResult[] {
   for (const item of items) {
     const book = mapGoogleBookToSearchResult(item);
 
-    if (!book.googleBooksId || seen.has(book.googleBooksId)) {
+    if (
+      !hasRequiredGoogleBookFields(book) ||
+      seen.has(book.googleBooksId)
+    ) {
       continue;
     }
 
@@ -136,7 +142,6 @@ function mapShelfItems(items: unknown[]): GoogleBookSearchResult[] {
 
   for (const book of uniqueBooks) {
     if (
-      !book.title ||
       isJuvenileBook(book.genres) ||
       isExcludedCategory(book.genres)
     ) {
