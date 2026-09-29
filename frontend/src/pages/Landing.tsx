@@ -7,7 +7,7 @@ export function Landing() {
     <div className="landing-hero relative flex min-h-screen flex-col">
       <div aria-hidden="true" className="landing-hero-wash" />
 
-      <header className="relative z-10 flex items-center justify-between px-6 pt-9 pb-6 md:px-10 md:pt-10 md:pb-7 lg:px-16">
+      <header className="relative z-10 flex items-center justify-between px-6 pt-10 pb-6 md:px-10 md:pt-11 md:pb-7 lg:px-16">
         <p className="font-display text-[2.125rem] leading-none text-ink md:text-4xl">
           ReaderDNA
         </p>
