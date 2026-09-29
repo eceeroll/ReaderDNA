@@ -23,11 +23,6 @@
   --color-warm: #e0954b;
   --color-warm-strong: #a8672b;
 
-  /* Colors — library status fills (kept very close so the grid stays quiet) */
-  --color-status-want: #f4effa;
-  --color-status-reading: #f6f1e8;
-  --color-status-read: #f5e7cf;
-
   /* Colors — semantic */
   --color-success-tint: #eaf0e6;
   --color-success: #7c9473;

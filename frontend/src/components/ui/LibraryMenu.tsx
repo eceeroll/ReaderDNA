@@ -10,18 +10,28 @@ const OPTIONS: { value: ReadStatus; label: string }[] = [
 ];
 
 const buttonTone: Record<ReadStatus | "none", string> = {
-  none: "border-line bg-white hover:bg-page",
-  WANT_TO_READ: "border-line bg-status-want hover:bg-white",
-  CURRENTLY_READING: "border-line bg-status-reading hover:bg-white",
-  READ: "border-line bg-status-read hover:bg-white",
+  none: "border-line bg-white text-ink hover:bg-page",
+  WANT_TO_READ: "border-line bg-surface text-ink hover:bg-white",
+  CURRENTLY_READING:
+    "border-line bg-brand-tint text-brand-strong hover:bg-white",
+  READ: "border-line bg-warm-tint text-warm-strong hover:bg-white",
 };
 
 function StatusIcon({ status }: { status: ReadStatus | null }) {
-  const className = "size-3.5 shrink-0 text-ink-muted";
+  const className = "size-3.5 shrink-0";
 
   if (status === "WANT_TO_READ") {
     return (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className={className}
+      >
         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
         <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
       </svg>
@@ -30,7 +40,16 @@ function StatusIcon({ status }: { status: ReadStatus | null }) {
 
   if (status === "CURRENTLY_READING") {
     return (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className={className}
+      >
         <path d="M12 7v14" />
         <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
       </svg>
@@ -39,14 +58,31 @@ function StatusIcon({ status }: { status: ReadStatus | null }) {
 
   if (status === "READ") {
     return (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className={className}
+      >
         <path d="M20 6L9 17l-5-5" />
       </svg>
     );
   }
 
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true" className={className}>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      aria-hidden="true"
+      className={className}
+    >
       <path d="M12 5v14M5 12h14" />
     </svg>
   );
@@ -105,7 +141,8 @@ export function LibraryMenu({
   const menuRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
   const label =
-    OPTIONS.find((option) => option.value === status)?.label ?? "Add to Library";
+    OPTIONS.find((option) => option.value === status)?.label ??
+    "Add to Library";
 
   useEffect(() => {
     if (!open) {
@@ -129,7 +166,10 @@ export function LibraryMenu({
       if (!(target instanceof Node)) {
         return;
       }
-      if (buttonRef.current?.contains(target) || menuRef.current?.contains(target)) {
+      if (
+        buttonRef.current?.contains(target) ||
+        menuRef.current?.contains(target)
+      ) {
         return;
       }
       setOpen(false);
@@ -163,7 +203,7 @@ export function LibraryMenu({
           aria-expanded={open}
           disabled={disabled}
           className={clsx(
-            "grid h-10 w-full shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-1 rounded-full border px-2 font-sans text-[12px] leading-none font-medium whitespace-nowrap text-ink focus-visible:shadow-[0_0_0_3px_var(--color-warm-tint)] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 motion-safe:transition-colors motion-safe:duration-250 motion-safe:ease-standard",
+            "grid h-10 w-full shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-1 rounded-full border px-2 font-sans text-[12px] leading-none font-medium whitespace-nowrap focus-visible:shadow-[0_0_0_3px_var(--color-warm-tint)] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 motion-safe:transition-colors motion-safe:duration-250 motion-safe:ease-standard",
             buttonTone[status ?? "none"],
           )}
           onClick={() => setOpen((current) => !current)}
@@ -183,7 +223,11 @@ export function LibraryMenu({
             ref={menuRef}
             role="menu"
             aria-label="Library"
-            style={{ top: position.top, left: position.left, width: position.width }}
+            style={{
+              top: position.top,
+              left: position.left,
+              width: position.width,
+            }}
             className="fixed z-40 rounded-lg bg-white p-1 shadow-md"
           >
             {OPTIONS.map((option) => {
