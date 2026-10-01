@@ -125,7 +125,7 @@ export async function addBookToLibrary(
         return;
       }
 
-      const googleData = await googleResponse.json();
+      const googleData: unknown = await googleResponse.json();
       const mapped = mapGoogleBookToSearchResult(googleData);
 
       try {

@@ -1,3 +1,27 @@
+/** Subset of a Google Books volume resource that ReaderDNA reads. */
+export type GoogleBooksVolume = {
+  id?: string;
+  volumeInfo?: GoogleBooksVolumeInfo;
+};
+
+/** Subset of volumeInfo fields used by the mapper. */
+export type GoogleBooksVolumeInfo = {
+  title?: string;
+  subtitle?: string;
+  authors?: string[];
+  categories?: string[];
+  pageCount?: number;
+  publishedDate?: string;
+  averageRating?: number;
+  language?: string;
+  imageLinks?: GoogleBooksImageLinks;
+};
+
+export type GoogleBooksImageLinks = {
+  thumbnail?: string;
+};
+
+/** Normalized book DTO returned by search/discover and used when persisting. */
 export interface GoogleBookSearchResult {
   googleBooksId: string;
   title: string;

@@ -1,5 +1,29 @@
 import type { GoogleBookSearchResult } from "../types/google-books-types.js";
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (typeof value !== "object" || value === null) {
+    return null;
+  }
+
+  return value as Record<string, unknown>;
+}
+
+function readString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+function readFiniteNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function readStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((entry): entry is string => typeof entry === "string");
+}
+
 function parsePublishedYear(publishedDate: unknown): number | null {
   if (typeof publishedDate !== "string") {
     return null;
@@ -21,19 +45,34 @@ function toHttpsUrl(url: unknown): string | null {
   return url.replace(/^http:\/\//i, "https://");
 }
 
-export function mapGoogleBookToSearchResult(item: any): GoogleBookSearchResult {
-  const volumeInfo = item?.volumeInfo ?? {};
+/** Extract `items` from a Google Books volumes list response. */
+export function getGoogleBooksVolumeItems(data: unknown): unknown[] {
+  const record = asRecord(data);
+  if (!record || !Array.isArray(record.items)) {
+    return [];
+  }
+
+  return record.items;
+}
+
+export function mapGoogleBookToSearchResult(
+  item: unknown,
+): GoogleBookSearchResult {
+  const record = asRecord(item);
+  const volumeInfo = asRecord(record?.volumeInfo) ?? {};
+  const imageLinks = asRecord(volumeInfo.imageLinks);
+  const authors = readStringArray(volumeInfo.authors);
 
   return {
-    googleBooksId: item?.id ?? "",
-    title: volumeInfo.title ?? "",
-    subtitle: volumeInfo.subtitle ?? null,
-    author: volumeInfo.authors?.[0] ?? "Unknown Author",
-    genres: volumeInfo.categories ?? [],
-    pageCount: volumeInfo.pageCount ?? null,
+    googleBooksId: readString(record?.id) ?? "",
+    title: readString(volumeInfo.title) ?? "",
+    subtitle: readString(volumeInfo.subtitle),
+    author: authors[0] ?? "Unknown Author",
+    genres: readStringArray(volumeInfo.categories),
+    pageCount: readFiniteNumber(volumeInfo.pageCount),
     publishedYear: parsePublishedYear(volumeInfo.publishedDate),
-    averageRating: volumeInfo.averageRating ?? null,
-    language: volumeInfo.language ?? null,
-    coverImageUrl: toHttpsUrl(volumeInfo.imageLinks?.thumbnail),
+    averageRating: readFiniteNumber(volumeInfo.averageRating),
+    language: readString(volumeInfo.language),
+    coverImageUrl: toHttpsUrl(imageLinks?.thumbnail),
   };
 }

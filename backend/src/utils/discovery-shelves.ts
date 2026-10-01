@@ -1,4 +1,7 @@
-import { mapGoogleBookToSearchResult } from "./map-google-book.js";
+import {
+  getGoogleBooksVolumeItems,
+  mapGoogleBookToSearchResult,
+} from "./map-google-book.js";
 import type { GoogleBookSearchResult } from "../types/google-books-types.js";
 
 const CACHE_TTL_MS = 60 * 60 * 1000;
@@ -205,8 +208,8 @@ async function fetchVolumeItems(
     );
   }
 
-  const data = (await response.json()) as { items?: unknown[] };
-  return Array.isArray(data.items) ? data.items : [];
+  const data: unknown = await response.json();
+  return getGoogleBooksVolumeItems(data);
 }
 
 async function fetchShelfItems(

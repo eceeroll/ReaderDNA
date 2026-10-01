@@ -1,6 +1,9 @@
 import type { Request, Response } from "express";
 import { sendValidationError } from "../utils/http-responses.js";
-import { mapGoogleBookToSearchResult } from "../utils/map-google-book.js";
+import {
+  getGoogleBooksVolumeItems,
+  mapGoogleBookToSearchResult,
+} from "../utils/map-google-book.js";
 import { searchQuerySchema } from "../schemas/book-search-schema.js";
 
 const GOOGLE_BOOKS_SEARCH_TIMEOUT_MS = 10_000;
@@ -44,12 +47,10 @@ export async function searchGoogleBooks(
       );
     }
 
-    const data = (await response.json()) as { items?: unknown[] };
-    const items = Array.isArray(data.items)
-      ? data.items
-          .map(mapGoogleBookToSearchResult)
-          .filter((book) => book.language === "en")
-      : [];
+    const data: unknown = await response.json();
+    const items = getGoogleBooksVolumeItems(data)
+      .map(mapGoogleBookToSearchResult)
+      .filter((book) => book.language === "en");
 
     res.status(200).json({ items });
   } catch (error) {
