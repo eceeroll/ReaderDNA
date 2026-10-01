@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { z } from "zod";
 import { prisma } from "../prisma/client.js";
 import {
   addToLibrarySchema,
@@ -8,6 +9,7 @@ import { sendValidationError } from "../utils/http-responses.js";
 import { mapGoogleBookToSearchResult } from "../utils/map-google-book.js";
 import { isPrismaDuplicate } from "../utils/prisma-errors.js";
 import { parseNumericIdParam } from "../utils/parse-numeric-id-param.js";
+
 const GOOGLE_BOOKS_FETCH_TIMEOUT_MS = 10_000;
 
 export async function getLibrary(req: Request, res: Response): Promise<void> {
@@ -205,8 +207,6 @@ export async function updateLibraryEntry(
     return;
   }
 
-  // Prisma treats `undefined` fields as "don't update" — status/rating
-  // being individually optional relies on this behavior.
   const { status, rating } = parsed.data;
 
   try {
@@ -225,9 +225,34 @@ export async function updateLibraryEntry(
       return;
     }
 
+    const nextStatus = status ?? userBook.status;
+
+    if (rating !== undefined && nextStatus !== "READ") {
+      sendValidationError(
+        res,
+        new z.ZodError([
+          {
+            code: "custom",
+            path: ["rating"],
+            message: "Rating can only be set when status is READ",
+          },
+        ]),
+      );
+      return;
+    }
+
+    // Ratings are only meaningful for READ. Leaving READ clears any rating.
+    // Omitted fields are left unchanged (Prisma skips undefined).
     const updatedUserBook = await prisma.userBook.update({
       where: { id: libraryEntryId, userId },
-      data: { status, rating },
+      data: {
+        ...(status !== undefined ? { status } : {}),
+        ...(nextStatus !== "READ"
+          ? { rating: null }
+          : rating !== undefined
+            ? { rating }
+            : {}),
+      },
     });
 
     res.status(200).json(updatedUserBook);
