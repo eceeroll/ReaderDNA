@@ -31,8 +31,10 @@ export async function searchGoogleBooks(
   }
 
   try {
+    // Strip " so user input cannot break quoted intitle/inauthor phrases.
+    const phrase = query.replaceAll('"', "");
     const url = new URL("https://www.googleapis.com/books/v1/volumes");
-    url.searchParams.set("q", `intitle:"${query}"`);
+    url.searchParams.set("q", `intitle:"${phrase}" OR inauthor:"${phrase}"`);
     url.searchParams.set("langRestrict", "en");
     url.searchParams.set("maxResults", "20");
     url.searchParams.set("key", apiKey);
