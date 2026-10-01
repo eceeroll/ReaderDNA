@@ -2,6 +2,9 @@ import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { authTokenPayloadSchema } from "../schemas/auth.schema.js";
 
+// Intentionally duplicated on the frontend (HTTP API contract). Backend and
+// frontend stay separate app boundaries; revisit a shared contracts package if
+// more API error codes/types need to stay in sync.
 const AUTH_TOKEN_INVALID = "AUTH_TOKEN_INVALID";
 
 export function authenticateToken(
