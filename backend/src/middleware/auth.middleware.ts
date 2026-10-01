@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import type { AuthTokenPayload } from "../types/auth.types.js";
+import { authTokenPayloadSchema } from "../schemas/auth.schema.js";
 
 const AUTH_TOKEN_INVALID = "AUTH_TOKEN_INVALID";
 
@@ -36,8 +36,18 @@ export function authenticateToken(
       throw new Error("JWT_SECRET is not defined");
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as AuthTokenPayload;
-    req.user = decoded;
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const parsed = authTokenPayloadSchema.safeParse(decoded);
+
+    if (!parsed.success) {
+      res.status(401).json({
+        message: "Invalid or expired token",
+        code: AUTH_TOKEN_INVALID,
+      });
+      return;
+    }
+
+    req.user = parsed.data;
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
