@@ -148,6 +148,8 @@ export function Discover() {
   const [libraryEntries, setLibraryEntries] = useState<
     Map<string, BookCardLibraryEntry>
   >(() => new Map());
+  const [libraryLoadError, setLibraryLoadError] = useState<string | null>(null);
+  const libraryLoadActiveRef = useRef(true);
   const [addError, setAddError] = useState<{
     bookId: string;
     message: string;
@@ -155,31 +157,44 @@ export function Discover() {
   const [hasSearched, setHasSearched] = useState(false);
   const [shelves, setShelves] = useState<ShelfState[]>(createInitialShelves);
 
-  useEffect(() => {
-    let active = true;
+  async function loadLibrary() {
+    try {
+      const library = await getLibrary();
+      if (!libraryLoadActiveRef.current) {
+        return;
+      }
 
-    getLibrary()
-      .then((library) => {
-        if (!active) {
-          return;
+      setLibraryEntries((current) => {
+        const next = new Map(current);
+        for (const item of library.items) {
+          next.set(item.book.googleBooksId, {
+            id: item.id,
+            status: item.status,
+            rating: item.rating,
+          });
         }
+        return next;
+      });
+      setLibraryLoadError(null);
+    } catch (error: unknown) {
+      if (!libraryLoadActiveRef.current) {
+        return;
+      }
 
-        setLibraryEntries((current) => {
-          const next = new Map(current);
-          for (const item of library.items) {
-            next.set(item.book.googleBooksId, {
-              id: item.id,
-              status: item.status,
-              rating: item.rating,
-            });
-          }
-          return next;
-        });
-      })
-      .catch(() => undefined);
+      setLibraryLoadError(
+        error instanceof ApiError
+          ? error.message
+          : "Something went wrong. Please try again.",
+      );
+    }
+  }
+
+  useEffect(() => {
+    libraryLoadActiveRef.current = true;
+    void loadLibrary();
 
     return () => {
-      active = false;
+      libraryLoadActiveRef.current = false;
     };
   }, []);
 
@@ -469,6 +484,25 @@ export function Discover() {
               </div>
             )}
           </form>
+
+          {libraryLoadError !== null && (
+            <div className="mt-6 max-w-2xl">
+              <FieldError
+                message={libraryLoadError}
+                align="start"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                className="mt-3"
+                onClick={() => {
+                  void loadLibrary();
+                }}
+              >
+                Try again
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 
