@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react";
 import clsx from "clsx";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router";
@@ -27,23 +28,15 @@ function errorMessage(error: unknown): string {
 
 function SectionChevron({ open }: { open: boolean }) {
   return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
+    <ChevronDown
+      size={20}
+      strokeWidth={1.75}
+      aria-hidden
       className={clsx(
         "size-5 shrink-0 text-ink-muted motion-safe:transition-transform motion-safe:duration-250 motion-safe:ease-soft",
         open && "rotate-180",
       )}
-    >
-      <path d="M6 9l6 6 6-6" />
-    </svg>
+    />
   );
 }
 
@@ -72,7 +65,7 @@ function LibrarySection({
           onClick={onToggle}
           className="-mx-3 flex w-[calc(100%+1.5rem)] items-center justify-between gap-3 rounded-md px-3 py-1 text-left hover:bg-surface focus-visible:shadow-[0_0_0_3px_var(--color-warm-tint)] focus-visible:outline-none motion-safe:transition-colors motion-safe:duration-250 motion-safe:ease-standard"
         >
-          <span className="min-w-0 font-display text-2xl leading-tight font-semibold text-ink">
+          <span className="min-w-0 font-sans text-2xl leading-tight font-semibold text-ink">
             {title} ({count})
           </span>
           <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-line bg-white text-ink">
@@ -149,12 +142,15 @@ export function Library() {
     }
 
     const previousStatus = current.status;
+    const previousRating = current.rating;
+    const nextRating = status === "READ" ? current.rating : null;
     updatingEntryIdRef.current = id;
     setUpdatingEntryId(id);
     setOpenSections((sections) => ({ ...sections, [status]: true }));
     setItems((list) =>
-      list?.map((item) => (item.id === id ? { ...item, status } : item)) ??
-      null,
+      list?.map((item) =>
+        item.id === id ? { ...item, status, rating: nextRating } : item,
+      ) ?? null,
     );
     setActionError(null);
 
@@ -163,7 +159,9 @@ export function Library() {
     } catch (error) {
       setItems((list) =>
         list?.map((item) =>
-          item.id === id ? { ...item, status: previousStatus } : item,
+          item.id === id
+            ? { ...item, status: previousStatus, rating: previousRating }
+            : item,
         ) ?? null,
       );
       setActionError({ id, message: errorMessage(error) });
@@ -179,7 +177,7 @@ export function Library() {
     }
 
     const current = items?.find((item) => item.id === id);
-    if (!current) {
+    if (!current || current.status !== "READ") {
       throw new Error("Unable to save rating");
     }
 

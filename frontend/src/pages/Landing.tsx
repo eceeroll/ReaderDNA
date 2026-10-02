@@ -1,30 +1,51 @@
 import { Link } from "react-router";
-import { Button } from "../components/ui/Button";
+import booklover from "../assets/booklover.svg";
 
 export function Landing() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-page px-4 py-16">
-      <div className="w-full max-w-lg text-center">
-        <p className="font-display text-2xl text-brand">ReaderDNA</p>
-        <h1 className="mt-8 font-display text-[32px] leading-[1.2] font-semibold text-ink">
-          Your reading, decoded.
-        </h1>
-        <p className="mt-4 font-sans text-[15px] leading-[1.6] text-ink-muted">
-          Sign in to discover books and build your library.
+    <div className="landing-hero relative flex min-h-screen flex-col">
+      <div aria-hidden="true" className="landing-hero-wash" />
+
+      <header className="relative z-10 flex items-center justify-between px-6 pt-10 pb-6 md:px-10 md:pt-11 md:pb-7 lg:px-16">
+        <p className="font-display text-[2.125rem] leading-none text-ink md:text-4xl">
+          ReaderDNA
         </p>
-        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <Link to="/login" className="w-full sm:w-auto">
-            <Button variant="primary" type="button" className="w-full">
-              Sign in
-            </Button>
-          </Link>
-          <Link to="/register" className="w-full sm:w-auto">
-            <Button variant="secondary" type="button" className="w-full">
-              Create your account
-            </Button>
-          </Link>
+        <Link to="/login" className="landing-pill">
+          Sign in
+        </Link>
+      </header>
+
+      <main className="relative z-10 flex flex-1 flex-col justify-center px-6 py-10 md:px-10 md:py-12 lg:px-16">
+        <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 md:grid-cols-2 md:gap-14 lg:gap-20">
+          <div className="motion-safe:animate-landing-rise w-full max-w-xl">
+            <h1 className="font-landing text-6xl leading-[1.05] font-semibold text-ink md:text-7xl">
+              <span className="block">Find your</span>
+              <span className="block">ReaderDNA</span>
+            </h1>
+            <p className="mt-5 max-w-md font-sans text-xl leading-relaxed text-ink-muted md:mt-6 md:text-2xl md:leading-relaxed">
+              Not what you read — why you read it. Discover the shape of your
+              taste in books.
+            </p>
+            <div className="mt-8 md:mt-10">
+              <Link to="/register" className="landing-pill">
+                Get Started
+              </Link>
+            </div>
+          </div>
+
+          <div className="landing-illustration-stage motion-safe:animate-landing-rise-delayed">
+            <div aria-hidden="true" className="landing-illustration-glow" />
+            <img
+              src={booklover}
+              alt="A reader surrounded by bookshelves, immersed in a book"
+              className="landing-illustration"
+              width={500}
+              height={500}
+              decoding="async"
+            />
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }

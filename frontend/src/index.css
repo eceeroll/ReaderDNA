@@ -2,9 +2,9 @@
 
 @theme {
   /* Fonts */
-  --font-sans: "Karla", sans-serif; /* becomes the default body font */
-  --font-display: "Fraunces", serif;
-  --font-accent: "Shantell Sans", cursive;
+  --font-sans: "Karla", sans-serif; /* body + mini headings */
+  --font-display: "Parkinsans", sans-serif; /* app display headings */
+  --font-landing: "Fraunces", serif; /* landing hero title only */
 
   /* Colors — neutrals */
   --color-page: #faf6ef;
@@ -45,11 +45,548 @@
   /* Easing */
   --ease-soft: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Soft decelerate — page reveal / page turn (no bounce/overshoot) */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Gentle start + long settle — page reveal pacing */
+  --ease-page-reveal: cubic-bezier(0.33, 0.05, 0.2, 1);
+
+  /* Landing entrance — soft, understated */
+  --animate-landing-rise: landing-rise 700ms var(--ease-soft) both;
+  --animate-landing-rise-delayed: landing-rise 800ms var(--ease-soft) 120ms both;
+  --animate-landing-glow: landing-glow 900ms var(--ease-standard) both;
+}
+
+@keyframes landing-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landing-glow {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/*
+ * PageRevealStage — corner-turn.
+ * Incoming opens as a circle from the page corner; outgoing fades out early
+ * so the two forms never double-expose. Height is driven by React.
+ */
+@keyframes page-reveal-in-forward {
+  from {
+    opacity: 0;
+    clip-path: circle(0% at 100% 100%);
+  }
+  to {
+    opacity: 1;
+    clip-path: circle(160% at 100% 100%);
+  }
+}
+
+@keyframes page-reveal-in-reverse {
+  from {
+    opacity: 0;
+    clip-path: circle(0% at 0% 0%);
+  }
+  to {
+    opacity: 1;
+    clip-path: circle(160% at 0% 0%);
+  }
+}
+
+@keyframes page-reveal-out-forward {
+  0% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes page-reveal-out-reverse {
+  0% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes page-reveal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes page-reveal-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @layer base {
   body {
     background-color: var(--color-page);
     color: var(--color-ink);
+  }
+}
+
+/* Landing — layered gradient + ambient shadow (scoped; other pages untouched) */
+.landing-hero {
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse 80% 75% at 92% 48%,
+      color-mix(in srgb, var(--color-brand-tint) 55%, var(--color-brand) 45%),
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 60% 55% at 70% 55%,
+      var(--color-brand-tint),
+      transparent 75%
+    ),
+    radial-gradient(
+      ellipse 50% 45% at 5% 90%,
+      color-mix(in srgb, var(--color-surface) 50%, var(--color-brand-tint) 50%),
+      transparent 70%
+    ),
+    linear-gradient(
+      105deg,
+      color-mix(in srgb, var(--color-page) 78%, var(--color-brand-tint) 22%) 0%,
+      color-mix(in srgb, var(--color-page) 55%, var(--color-brand-tint) 45%) 42%,
+      color-mix(in srgb, var(--color-brand-tint) 70%, var(--color-page) 30%) 72%,
+      color-mix(in srgb, var(--color-brand-tint) 85%, var(--color-brand) 15%) 100%
+    );
+  box-shadow:
+    inset 0 0 160px color-mix(in srgb, var(--color-brand) 16%, transparent),
+    inset 0 -72px 110px color-mix(in srgb, var(--color-surface) 40%, transparent);
+}
+
+.landing-hero-wash {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(
+      ellipse 65% 60% at 82% 52%,
+      color-mix(in srgb, var(--color-brand) 20%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 40% 32% at 16% 20%,
+      color-mix(in srgb, var(--color-warm-tint) 28%, transparent),
+      transparent 75%
+    );
+}
+
+.landing-illustration-stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+}
+
+@media (min-width: 768px) {
+  .landing-illustration-stage {
+    justify-content: flex-end;
+  }
+}
+
+.landing-illustration-glow {
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+  width: 130%;
+  height: 130%;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-brand-tint) 70%, var(--color-brand) 30%) 0%,
+    color-mix(in srgb, var(--color-brand) 16%, transparent) 40%,
+    transparent 68%
+  );
+  filter: blur(56px);
+  opacity: 0.85;
+}
+
+.landing-illustration {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 20rem;
+  user-select: none;
+  filter: drop-shadow(
+    0 24px 40px color-mix(in srgb, var(--color-brand) 16%, transparent)
+  );
+}
+
+@media (min-width: 768px) {
+  .landing-illustration {
+    max-width: 24rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .landing-illustration {
+    max-width: 28rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-illustration-glow {
+    animation: landing-glow 900ms var(--ease-standard) both;
+  }
+}
+
+/* Landing pill — shared Sign in / Get Started pattern */
+.landing-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: 1.1875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: #fff;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--color-brand) 78%, var(--color-brand-tint)) 0%,
+    color-mix(in srgb, var(--color-brand) 62%, var(--color-brand-tint)) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--color-brand) 35%, transparent);
+  border-radius: 9999px;
+  padding: 1.05rem 2.35rem;
+  box-shadow:
+    0 10px 28px color-mix(in srgb, var(--color-brand) 28%, transparent),
+    0 3px 8px color-mix(in srgb, var(--color-brand) 14%, transparent);
+  transition:
+    background 250ms var(--ease-standard),
+    border-color 250ms var(--ease-standard),
+    box-shadow 250ms var(--ease-standard),
+    transform 250ms var(--ease-soft);
+}
+
+.landing-pill:hover {
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--color-brand) 88%, var(--color-brand-tint)) 0%,
+    color-mix(in srgb, var(--color-brand) 72%, var(--color-brand-tint)) 100%
+  );
+  border-color: color-mix(in srgb, var(--color-brand) 45%, transparent);
+  box-shadow:
+    0 14px 34px color-mix(in srgb, var(--color-brand) 34%, transparent),
+    0 4px 12px color-mix(in srgb, var(--color-brand) 16%, transparent);
+  transform: translateY(-2px);
+}
+
+.landing-pill:active {
+  transform: translateY(1px);
+  box-shadow:
+    0 5px 16px color-mix(in srgb, var(--color-brand) 24%, transparent),
+    0 1px 4px color-mix(in srgb, var(--color-brand) 12%, transparent);
+}
+
+.landing-pill:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--color-brand) 34%, transparent),
+    0 10px 28px color-mix(in srgb, var(--color-brand) 28%, transparent);
+}
+
+@media (min-width: 768px) {
+  .landing-pill {
+    font-size: 1.25rem;
+    padding: 1.15rem 2.55rem;
+  }
+}
+
+/* Auth split layout — shared Login/Register shell */
+.auth-shell {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  min-height: 100vh;
+  grid-template-areas:
+    "header"
+    "illustration"
+    "form";
+  grid-template-rows: auto auto 1fr;
+  background:
+    radial-gradient(
+      ellipse 62% 58% at 16% 52%,
+      color-mix(in srgb, var(--color-brand-tint) 55%, var(--color-brand) 45%),
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 50% 45% at 78% 58%,
+      color-mix(in srgb, var(--color-brand-tint) 55%, transparent),
+      transparent 74%
+    ),
+    linear-gradient(
+      118deg,
+      color-mix(in srgb, var(--color-brand-tint) 42%, var(--color-page)) 0%,
+      var(--color-page) 46%,
+      color-mix(in srgb, var(--color-page) 88%, var(--color-brand-tint) 12%) 100%
+    );
+}
+
+.auth-shell-wash {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(
+      ellipse 48% 42% at 22% 48%,
+      color-mix(in srgb, var(--color-brand) 18%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 36% 30% at 72% 36%,
+      color-mix(in srgb, var(--color-brand) 8%, transparent),
+      transparent 72%
+    );
+}
+
+.auth-header {
+  position: relative;
+  z-index: 2;
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  padding: 2.5rem 1.5rem 0.75rem;
+}
+
+.auth-illustration-pane {
+  position: relative;
+  z-index: 1;
+  grid-area: illustration;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  padding: 1rem 1.5rem 0.5rem;
+}
+
+/* Same ambient recipe as landing illustration glow — tokens only */
+.auth-illustration-glow {
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+  width: 130%;
+  height: 130%;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-brand-tint) 70%, var(--color-brand) 30%) 0%,
+    color-mix(in srgb, var(--color-brand) 16%, transparent) 40%,
+    transparent 68%
+  );
+  filter: blur(56px);
+  opacity: 0.85;
+}
+
+.auth-illustration {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 18rem;
+  height: auto;
+  user-select: none;
+  /* Soft edge dissolve into ambient wash — no hard canvas cut */
+  -webkit-mask-image: radial-gradient(
+    ellipse 88% 84% at 50% 50%,
+    #000 58%,
+    transparent 92%
+  );
+  mask-image: radial-gradient(
+    ellipse 88% 84% at 50% 50%,
+    #000 58%,
+    transparent 92%
+  );
+  filter: drop-shadow(
+    0 24px 40px color-mix(in srgb, var(--color-brand) 16%, transparent)
+  );
+}
+
+.auth-form-pane {
+  position: relative;
+  z-index: 1;
+  grid-area: form;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1.25rem 2.5rem;
+}
+
+/* Same soft brand blur used historically behind auth cards */
+.auth-form-ambient {
+  pointer-events: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 0;
+  height: 24rem;
+  width: 24rem;
+  translate: -50% -50%;
+  border-radius: 9999px;
+  background-color: color-mix(in srgb, var(--color-brand) 20%, transparent);
+  filter: blur(64px);
+}
+
+/* PageRevealStage — single clipped surface; height set imperatively while animating */
+.page-reveal-stage {
+  position: relative;
+  width: 100%;
+}
+
+.page-reveal-stage.is-animating {
+  overflow: hidden;
+}
+
+.page-reveal-layer {
+  width: 100%;
+}
+
+.page-reveal-stage.is-animating .page-reveal-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.page-reveal-layer--outgoing {
+  z-index: 1;
+  pointer-events: none;
+}
+
+.page-reveal-layer--incoming {
+  position: relative;
+  z-index: 2;
+}
+
+.page-reveal-stage.is-animating .page-reveal-layer--incoming {
+  position: absolute;
+}
+
+/* corner-turn — duration from --page-reveal-duration */
+.page-reveal-motion-in.is-forward {
+  animation: page-reveal-in-forward var(--page-reveal-duration, 600ms)
+    var(--ease-page-reveal) both;
+}
+
+.page-reveal-motion-in.is-reverse {
+  animation: page-reveal-in-reverse var(--page-reveal-duration, 600ms)
+    var(--ease-page-reveal) both;
+}
+
+.page-reveal-motion-out.is-forward {
+  animation: page-reveal-out-forward var(--page-reveal-duration, 600ms)
+    var(--ease-page-reveal) both;
+}
+
+.page-reveal-motion-out.is-reverse {
+  animation: page-reveal-out-reverse var(--page-reveal-duration, 600ms)
+    var(--ease-page-reveal) both;
+}
+
+.page-reveal-motion-fade-in {
+  animation: page-reveal-fade-in var(--page-reveal-duration, 180ms)
+    var(--ease-standard) both;
+}
+
+.page-reveal-motion-fade-out {
+  animation: page-reveal-fade-out var(--page-reveal-duration, 180ms)
+    var(--ease-standard) both;
+}
+
+@media (min-width: 768px) {
+  .auth-shell {
+    grid-template-areas:
+      "header header"
+      "illustration form";
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    grid-template-rows: auto 1fr;
+  }
+
+  .auth-header {
+    padding: 2.75rem 2.5rem 0;
+  }
+
+  .auth-illustration-pane {
+    padding: 1rem 2rem 2.5rem 2.5rem;
+  }
+
+  .auth-illustration {
+    max-width: 26rem;
+  }
+
+  .auth-form-pane {
+    padding: 1rem 2.5rem 2.5rem 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .auth-shell {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  }
+
+  .auth-header {
+    padding: 2.75rem 4rem 0;
+  }
+
+  .auth-illustration-pane {
+    padding: 1rem 2.5rem 3rem 4rem;
+  }
+
+  .auth-illustration {
+    max-width: 30rem;
+  }
+
+  .auth-form-pane {
+    padding: 1rem 4rem 3rem 2.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .auth-illustration-pane {
+    min-height: 0;
+    max-height: 42vh;
+  }
+
+  .auth-illustration {
+    max-height: 34vh;
+    width: auto;
   }
 }

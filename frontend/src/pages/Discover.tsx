@@ -17,6 +17,7 @@ import {
 import { Button } from "../components/ui/Button";
 import { FieldError } from "../components/ui/FieldError";
 import { Input } from "../components/ui/Input";
+import { Search } from "lucide-react";
 import { ApiError } from "../lib/api-client";
 
 const DISCOVERY_SHELF_IDS = [
@@ -46,26 +47,6 @@ function createInitialShelves(): ShelfState[] {
   }));
 }
 
-function SearchIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="11" cy="11" r="7" />
-      <path d="M20 20l-3.5-3.5" />
-    </svg>
-  );
-}
-
 function ShelfRow({
   shelf,
   updatingBookId,
@@ -87,7 +68,7 @@ function ShelfRow({
     <section aria-labelledby={`shelf-${shelf.id}`} aria-busy={shelf.isLoading}>
       <h2
         id={`shelf-${shelf.id}`}
-        className="font-display text-2xl leading-tight font-semibold text-ink"
+        className="font-sans text-2xl leading-tight font-semibold text-ink"
       >
         {shelf.title}
       </h2>
@@ -340,13 +321,19 @@ export function Discover() {
       }
 
       const previousStatus = existing.status;
+      const previousRating = existing.rating;
+      const nextRating = status === "READ" ? existing.rating : null;
       setLibraryEntries((current) => {
         const next = new Map(current);
         const currentEntry = next.get(googleBooksId);
         if (!currentEntry) {
           return current;
         }
-        next.set(googleBooksId, { ...currentEntry, status });
+        next.set(googleBooksId, {
+          ...currentEntry,
+          status,
+          rating: nextRating,
+        });
         return next;
       });
 
@@ -359,7 +346,11 @@ export function Discover() {
           if (!currentEntry || currentEntry.id !== existing.id) {
             return current;
           }
-          next.set(googleBooksId, { ...currentEntry, status: previousStatus });
+          next.set(googleBooksId, {
+            ...currentEntry,
+            status: previousStatus,
+            rating: previousRating,
+          });
           return next;
         });
 
@@ -388,6 +379,10 @@ export function Discover() {
     }
 
     const [googleBooksId, entry] = match;
+    if (entry.status !== "READ") {
+      throw new Error("Unable to save rating");
+    }
+
     const previousRating = entry.rating;
 
     ratingBookIdRef.current = googleBooksId;
@@ -442,7 +437,7 @@ export function Discover() {
             <h1 className="font-display text-[32px] leading-[1.2] font-semibold text-ink">
               Find a book for your shelf
             </h1>
-            <p className="mt-2 font-accent text-[16px] leading-[1.4] text-ink-muted">
+            <p className="mt-2 font-sans text-[16px] leading-[1.4] text-ink-muted">
               A quiet corner to wander the shelves.
             </p>
           </div>
@@ -461,7 +456,9 @@ export function Discover() {
                   type="search"
                   value={searchQuery}
                   placeholder="The Night Circus, or Kazuo Ishiguro"
-                  leadingIcon={<SearchIcon />}
+                  leadingIcon={
+                    <Search size={16} strokeWidth={1.75} aria-hidden />
+                  }
                   onChange={(event) => {
                     setSearchQuery(event.target.value);
                     setSearchError(null);
@@ -509,7 +506,7 @@ export function Discover() {
       <main className="mx-auto max-w-6xl px-4 pt-10 pb-16 md:pt-16">
         {(isSearching || hasSearched) && (
           <section className="mb-16 md:mb-24" aria-live="polite">
-            <h2 className="font-display text-2xl leading-tight font-semibold text-ink">
+            <h2 className="font-sans text-2xl leading-tight font-semibold text-ink">
               From your search
             </h2>
 
@@ -556,7 +553,7 @@ export function Discover() {
         )}
 
         <div>
-          <h2 className="font-display text-2xl leading-tight font-semibold text-ink">
+          <h2 className="font-sans text-2xl leading-tight font-semibold text-ink">
             Browse the shelves
           </h2>
           <div className="mt-10 flex flex-col gap-16 md:gap-24">

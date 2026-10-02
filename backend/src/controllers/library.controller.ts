@@ -6,7 +6,10 @@ import {
   updateLibraryEntrySchema,
 } from "../schemas/library.schema.js";
 import { sendValidationError } from "../utils/http-responses.js";
-import { mapGoogleBookToSearchResult } from "../utils/map-google-book.js";
+import {
+  hasRequiredGoogleBookFields,
+  mapGoogleBookToSearchResult,
+} from "../utils/map-google-book.js";
 import { isPrismaDuplicate } from "../utils/prisma-errors.js";
 import { parseNumericIdParam } from "../utils/parse-numeric-id-param.js";
 
@@ -129,6 +132,13 @@ export async function addBookToLibrary(
 
       const googleData: unknown = await googleResponse.json();
       const mapped = mapGoogleBookToSearchResult(googleData);
+
+      if (!hasRequiredGoogleBookFields(mapped)) {
+        res.status(404).json({
+          message: "Book not found",
+        });
+        return;
+      }
 
       try {
         book = await prisma.book.create({

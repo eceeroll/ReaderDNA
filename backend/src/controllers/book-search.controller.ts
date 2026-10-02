@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { sendValidationError } from "../utils/http-responses.js";
 import {
   getGoogleBooksVolumeItems,
+  hasRequiredGoogleBookFields,
   mapGoogleBookToSearchResult,
 } from "../utils/map-google-book.js";
 import { searchQuerySchema } from "../schemas/book-search-schema.js";
@@ -52,7 +53,9 @@ export async function searchGoogleBooks(
     const data: unknown = await response.json();
     const items = getGoogleBooksVolumeItems(data)
       .map(mapGoogleBookToSearchResult)
-      .filter((book) => book.language === "en");
+      .filter(
+        (book) => hasRequiredGoogleBookFields(book) && book.language === "en",
+      );
 
     res.status(200).json({ items });
   } catch (error) {

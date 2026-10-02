@@ -1,23 +1,7 @@
+import { X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { RatingStars } from "../ui/RatingStars";
-
-function CloseIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      aria-hidden="true"
-    >
-      <path d="M6 6l12 12M18 6L6 18" />
-    </svg>
-  );
-}
 
 export function RateBookDialog({
   open,
@@ -109,11 +93,11 @@ export function RateBookDialog({
           onClick={onClose}
           className="absolute top-4 right-4 flex size-8 items-center justify-center rounded-full text-ink-muted hover:bg-surface hover:text-ink focus-visible:shadow-[0_0_0_3px_var(--color-warm-tint)] focus-visible:outline-none motion-safe:transition-colors motion-safe:duration-250 motion-safe:ease-standard"
         >
-          <CloseIcon />
+          <X size={16} strokeWidth={1.75} aria-hidden />
         </button>
         <h2
           id={titleId}
-          className="text-center font-display text-2xl leading-tight font-semibold text-ink"
+          className="text-center font-sans text-2xl leading-tight font-semibold text-ink"
         >
           Rate this book
         </h2>

@@ -1,4 +1,11 @@
 import clsx from "clsx";
+import {
+  BookMarked,
+  BookOpen,
+  Check,
+  ChevronDown,
+  Plus,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ReadStatus } from "../../api/library";
@@ -18,112 +25,38 @@ const buttonTone: Record<ReadStatus | "none", string> = {
 };
 
 function StatusIcon({ status }: { status: ReadStatus | null }) {
-  const className = "size-3.5 shrink-0";
+  const iconProps = {
+    className: "size-3.5 shrink-0",
+    strokeWidth: 1.75,
+    "aria-hidden": true as const,
+  };
 
   if (status === "WANT_TO_READ") {
-    return (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-        className={className}
-      >
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-      </svg>
-    );
+    return <BookMarked {...iconProps} />;
   }
 
   if (status === "CURRENTLY_READING") {
-    return (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-        className={className}
-      >
-        <path d="M12 7v14" />
-        <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
-      </svg>
-    );
+    return <BookOpen {...iconProps} />;
   }
 
   if (status === "READ") {
-    return (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-        className={className}
-      >
-        <path d="M20 6L9 17l-5-5" />
-      </svg>
-    );
+    return <Check {...iconProps} />;
   }
 
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      aria-hidden="true"
-      className={className}
-    >
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className="size-4 shrink-0 text-ink-muted"
-    >
-      <path d="M20 6L9 17l-5-5" />
-    </svg>
-  );
+  return <Plus {...iconProps} />;
 }
 
 function ChevronIcon({ open }: { open: boolean }) {
   return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      aria-hidden="true"
+    <ChevronDown
+      size={12}
+      strokeWidth={2}
+      aria-hidden
       className={clsx(
         "shrink-0 motion-safe:transition-transform motion-safe:duration-250 motion-safe:ease-soft",
         open && "rotate-180",
       )}
-    >
-      <path d="M6 9l6 6 6-6" />
-    </svg>
+    />
   );
 }
 
@@ -250,7 +183,14 @@ export function LibraryMenu({
                   }}
                 >
                   <span className="min-w-0 flex-1">{option.label}</span>
-                  {selected && <CheckIcon />}
+                  {selected && (
+                    <Check
+                      size={16}
+                      strokeWidth={1.75}
+                      aria-hidden
+                      className="size-4 shrink-0 text-ink-muted"
+                    />
+                  )}
                 </button>
               );
             })}

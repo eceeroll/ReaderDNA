@@ -76,3 +76,10 @@ export function mapGoogleBookToSearchResult(
     coverImageUrl: toHttpsUrl(imageLinks?.thumbnail),
   };
 }
+
+/** Shared guard: skip/reject mapped volumes missing identity fields. */
+export function hasRequiredGoogleBookFields(
+  book: GoogleBookSearchResult,
+): boolean {
+  return book.googleBooksId.length > 0 && book.title.length > 0;
+}
