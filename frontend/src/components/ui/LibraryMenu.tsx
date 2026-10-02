@@ -6,7 +6,7 @@ import {
   ChevronDown,
   Plus,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ReadStatus } from "../../api/library";
 
@@ -15,6 +15,9 @@ const OPTIONS: { value: ReadStatus; label: string }[] = [
   { value: "CURRENTLY_READING", label: "Currently Reading" },
   { value: "READ", label: "Read" },
 ];
+
+const MENU_VIEWPORT_GAP = 8;
+const MENU_MIN_WIDTH = 180;
 
 const buttonTone: Record<ReadStatus | "none", string> = {
   none: "border-line bg-white text-ink hover:bg-page",
@@ -77,7 +80,7 @@ export function LibraryMenu({
     OPTIONS.find((option) => option.value === status)?.label ??
     "Add to Library";
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!open) {
       return;
     }
@@ -87,11 +90,40 @@ export function LibraryMenu({
       if (!rect) {
         return;
       }
-      setPosition({
-        top: rect.bottom + 8,
-        left: rect.left,
-        width: Math.max(rect.width, 180),
-      });
+
+      const width = Math.max(rect.width, MENU_MIN_WIDTH);
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const menuHeight = menuRef.current?.offsetHeight ?? 0;
+
+      let left = rect.left;
+      if (left + width > viewportWidth - MENU_VIEWPORT_GAP) {
+        left = viewportWidth - width - MENU_VIEWPORT_GAP;
+      }
+      left = Math.max(MENU_VIEWPORT_GAP, left);
+
+      const spaceBelow = viewportHeight - rect.bottom - MENU_VIEWPORT_GAP;
+      const spaceAbove = rect.top - MENU_VIEWPORT_GAP;
+      const shouldOpenUpward =
+        menuHeight > 0 &&
+        spaceBelow < menuHeight &&
+        spaceAbove > spaceBelow;
+
+      let top = shouldOpenUpward
+        ? rect.top - menuHeight - MENU_VIEWPORT_GAP
+        : rect.bottom + MENU_VIEWPORT_GAP;
+
+      if (top < MENU_VIEWPORT_GAP) {
+        top = MENU_VIEWPORT_GAP;
+      }
+      if (menuHeight > 0 && top + menuHeight > viewportHeight - MENU_VIEWPORT_GAP) {
+        top = Math.max(
+          MENU_VIEWPORT_GAP,
+          viewportHeight - menuHeight - MENU_VIEWPORT_GAP,
+        );
+      }
+
+      setPosition({ top, left, width });
     }
 
     function onPointerDown(event: MouseEvent) {
@@ -115,11 +147,13 @@ export function LibraryMenu({
     }
 
     place();
+    const frame = window.requestAnimationFrame(place);
     window.addEventListener("resize", place);
     window.addEventListener("scroll", place, true);
     document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
     return () => {
+      window.cancelAnimationFrame(frame);
       window.removeEventListener("resize", place);
       window.removeEventListener("scroll", place, true);
       document.removeEventListener("mousedown", onPointerDown);
@@ -129,25 +163,23 @@ export function LibraryMenu({
 
   return (
     <>
-      <span ref={buttonRef} className="block w-full">
+      <span ref={buttonRef} className="block w-full min-w-0">
         <button
           type="button"
           aria-haspopup="menu"
           aria-expanded={open}
+          aria-label={label}
+          title={label}
           disabled={disabled}
           className={clsx(
-            "grid h-10 w-full shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-1 rounded-full border px-2 font-sans text-[12px] leading-none font-medium whitespace-nowrap focus-visible:shadow-[0_0_0_3px_var(--color-warm-tint)] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 motion-safe:transition-colors motion-safe:duration-250 motion-safe:ease-standard",
+            "flex h-10 w-full min-w-0 items-center gap-1 rounded-full border px-2 font-sans text-[12px] leading-none font-medium focus-visible:shadow-[0_0_0_3px_var(--color-warm-tint)] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 motion-safe:transition-colors motion-safe:duration-250 motion-safe:ease-standard",
             buttonTone[status ?? "none"],
           )}
           onClick={() => setOpen((current) => !current)}
         >
-          <span className="flex items-center justify-self-start">
-            <StatusIcon status={status} />
-          </span>
-          <span className="text-center whitespace-nowrap">{label}</span>
-          <span className="flex items-center justify-self-end">
-            <ChevronIcon open={open} />
-          </span>
+          <StatusIcon status={status} />
+          <span className="min-w-0 flex-1 truncate text-center">{label}</span>
+          <ChevronIcon open={open} />
         </button>
       </span>
       {open &&

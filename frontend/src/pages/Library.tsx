@@ -1,6 +1,4 @@
-import { ChevronDown } from "lucide-react";
-import clsx from "clsx";
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import {
   getLibrary,
@@ -14,6 +12,13 @@ import { Button } from "../components/ui/Button";
 import { FieldError } from "../components/ui/FieldError";
 import { ApiError } from "../lib/api-client";
 
+/**
+ * Approximate how many denser shelf cards (+ gap-4) fit on desktop.
+ * Sections at or below this count skip "Show all"; longer sections still
+ * keep horizontal scrolling in the preview shelf.
+ */
+const SHELF_SHOW_ALL_THRESHOLD = 8;
+
 const SECTIONS: { status: ReadStatus; title: string }[] = [
   { status: "WANT_TO_READ", title: "Want to Read" },
   { status: "CURRENTLY_READING", title: "Currently Reading" },
@@ -26,66 +31,100 @@ function errorMessage(error: unknown): string {
     : "Something went wrong. Please try again.";
 }
 
-function SectionChevron({ open }: { open: boolean }) {
-  return (
-    <ChevronDown
-      size={20}
-      strokeWidth={1.75}
-      aria-hidden
-      className={clsx(
-        "size-5 shrink-0 text-ink-muted motion-safe:transition-transform motion-safe:duration-250 motion-safe:ease-soft",
-        open && "rotate-180",
-      )}
-    />
-  );
-}
-
 function LibrarySection({
   title,
   count,
-  open,
-  onToggle,
-  children,
+  items,
+  expanded,
+  onToggleExpanded,
+  updatingEntryId,
+  actionError,
+  onStatusChange,
+  onRequestRate,
 }: {
   title: string;
   count: number;
-  open: boolean;
-  onToggle: () => void;
-  children: ReactNode;
+  items: UserLibraryEntry[];
+  expanded: boolean;
+  onToggleExpanded: () => void;
+  updatingEntryId: number | null;
+  actionError: { id: number; message: string } | null;
+  onStatusChange: (id: number, status: ReadStatus) => void;
+  onRequestRate: (id: number) => void;
 }) {
-  const panelId = useId();
+  const toggleWrapRef = useRef<HTMLDivElement>(null);
+  const booksRef = useRef<HTMLDivElement>(null);
+  const showToggle = items.length > SHELF_SHOW_ALL_THRESHOLD;
+
+  function handleToggle() {
+    if (expanded) {
+      const active = document.activeElement;
+      const focusInBooks =
+        active instanceof HTMLElement &&
+        (booksRef.current?.contains(active) ?? false);
+
+      onToggleExpanded();
+
+      if (focusInBooks) {
+        queueMicrotask(() => {
+          toggleWrapRef.current?.querySelector("button")?.focus();
+        });
+      }
+      return;
+    }
+
+    onToggleExpanded();
+  }
 
   return (
     <section>
-      <h2>
-        <button
-          type="button"
-          aria-expanded={open}
-          aria-controls={panelId}
-          onClick={onToggle}
-          className="-mx-3 flex w-[calc(100%+1.5rem)] items-center justify-between gap-3 rounded-md px-3 py-1 text-left hover:bg-surface focus-visible:shadow-[0_0_0_3px_var(--color-warm-tint)] focus-visible:outline-none motion-safe:transition-colors motion-safe:duration-250 motion-safe:ease-standard"
-        >
-          <span className="min-w-0 font-sans text-2xl leading-tight font-semibold text-ink">
-            {title} ({count})
-          </span>
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-line bg-white text-ink">
-            <SectionChevron open={open} />
-          </span>
-        </button>
-      </h2>
-      <div
-        id={panelId}
-        className={clsx(
-          "grid motion-safe:transition-[grid-template-rows] motion-safe:duration-250 motion-safe:ease-soft",
-          open ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="min-w-0 font-sans text-2xl leading-tight font-semibold text-ink">
+          {title} ({count})
+        </h2>
+        {showToggle && (
+          <div ref={toggleWrapRef} className="shrink-0">
+            <Button type="button" variant="ghost" onClick={handleToggle}>
+              {expanded ? "Show less" : `Show all (${count})`}
+            </Button>
+          </div>
         )}
-      >
-        <div
-          className={clsx("min-h-0 overflow-hidden", !open && "pointer-events-none")}
-          inert={!open}
-        >
-          <div className="pt-8 pb-3">{children}</div>
-        </div>
+      </div>
+
+      <div ref={booksRef}>
+        {expanded ? (
+          <ul className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
+            {items.map((entry) => (
+              <li key={entry.id} className="min-w-0">
+                <LibraryBookCard
+                  entry={entry}
+                  isUpdating={updatingEntryId === entry.id}
+                  onStatusChange={onStatusChange}
+                  onRequestRate={onRequestRate}
+                  actionError={
+                    actionError?.id === entry.id ? actionError.message : null
+                  }
+                />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="mt-6 flex gap-4 overflow-x-auto py-3">
+            {items.map((entry) => (
+              <LibraryBookCard
+                key={entry.id}
+                entry={entry}
+                className="w-36 shrink-0"
+                isUpdating={updatingEntryId === entry.id}
+                onStatusChange={onStatusChange}
+                onRequestRate={onRequestRate}
+                actionError={
+                  actionError?.id === entry.id ? actionError.message : null
+                }
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -103,7 +142,7 @@ export function Library() {
   const [ratingEntryId, setRatingEntryId] = useState<number | null>(null);
   const ratingEntryIdRef = useRef<number | null>(null);
   const [rateEntryId, setRateEntryId] = useState<number | null>(null);
-  const [openSections, setOpenSections] = useState<Record<ReadStatus, boolean>>({
+  const [showAll, setShowAll] = useState<Record<ReadStatus, boolean>>({
     WANT_TO_READ: false,
     CURRENTLY_READING: false,
     READ: false,
@@ -142,27 +181,23 @@ export function Library() {
     }
 
     const previousStatus = current.status;
-    const previousRating = current.rating;
-    const nextRating = status === "READ" ? current.rating : null;
     updatingEntryIdRef.current = id;
     setUpdatingEntryId(id);
-    setOpenSections((sections) => ({ ...sections, [status]: true }));
-    setItems((list) =>
-      list?.map((item) =>
-        item.id === id ? { ...item, status, rating: nextRating } : item,
-      ) ?? null,
+    setItems(
+      (list) =>
+        list?.map((item) => (item.id === id ? { ...item, status } : item)) ??
+        null,
     );
     setActionError(null);
 
     try {
       await updateLibraryEntry(id, { status });
     } catch (error) {
-      setItems((list) =>
-        list?.map((item) =>
-          item.id === id
-            ? { ...item, status: previousStatus, rating: previousRating }
-            : item,
-        ) ?? null,
+      setItems(
+        (list) =>
+          list?.map((item) =>
+            item.id === id ? { ...item, status: previousStatus } : item,
+          ) ?? null,
       );
       setActionError({ id, message: errorMessage(error) });
     } finally {
@@ -177,26 +212,28 @@ export function Library() {
     }
 
     const current = items?.find((item) => item.id === id);
-    if (!current || current.status !== "READ") {
+    if (!current) {
       throw new Error("Unable to save rating");
     }
 
     const previousRating = current.rating;
     ratingEntryIdRef.current = id;
     setRatingEntryId(id);
-    setItems((list) =>
-      list?.map((item) => (item.id === id ? { ...item, rating } : item)) ??
-      null,
+    setItems(
+      (list) =>
+        list?.map((item) => (item.id === id ? { ...item, rating } : item)) ??
+        null,
     );
     setActionError(null);
 
     try {
       await updateLibraryEntry(id, { rating });
     } catch (error) {
-      setItems((list) =>
-        list?.map((item) =>
-          item.id === id ? { ...item, rating: previousRating } : item,
-        ) ?? null,
+      setItems(
+        (list) =>
+          list?.map((item) =>
+            item.id === id ? { ...item, rating: previousRating } : item,
+          ) ?? null,
       );
       setActionError({ id, message: errorMessage(error) });
       throw error;
@@ -220,7 +257,7 @@ export function Library() {
 
   return (
     <div className="min-h-screen bg-page">
-      <main className="mx-auto max-w-6xl px-4 pt-10 pb-16 md:pt-16">
+      <main className="mx-auto max-w-6xl px-4 pt-6 pb-16 md:pt-8">
         <h1 className="font-display text-[32px] leading-[1.2] font-semibold text-ink">
           Your library
         </h1>
@@ -230,19 +267,19 @@ export function Library() {
         </p>
 
         {isLoading && (
-          <p className="mt-10 font-sans text-[15px] text-ink-muted" aria-busy="true">
+          <p className="mt-8 font-sans text-[15px] text-ink-muted" aria-busy="true">
             Loading your library...
           </p>
         )}
 
         {loadError !== null && (
-          <div className="mt-10">
+          <div className="mt-8">
             <FieldError message={loadError} align="start" />
           </div>
         )}
 
         {items !== null && items.length === 0 && (
-          <div className="mt-10 max-w-xl">
+          <div className="mt-8 max-w-xl">
             <p className="font-sans text-[15px] leading-[1.6] text-ink-muted">
               Your shelves are empty. Find a book on Discover and it will show
               up here.
@@ -254,36 +291,25 @@ export function Library() {
         )}
 
         {sections.length > 0 && (
-          <div className="mt-10 flex flex-col gap-10">
+          <div className="mt-8 flex flex-col gap-8">
             {sections.map((section) => (
               <LibrarySection
                 key={section.status}
                 title={section.title}
                 count={section.items.length}
-                open={openSections[section.status]}
-                onToggle={() =>
-                  setOpenSections((current) => ({
+                items={section.items}
+                expanded={showAll[section.status]}
+                onToggleExpanded={() =>
+                  setShowAll((current) => ({
                     ...current,
                     [section.status]: !current[section.status],
                   }))
                 }
-              >
-                <ul className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
-                  {section.items.map((entry) => (
-                    <li key={entry.id} className="min-w-0">
-                      <LibraryBookCard
-                        entry={entry}
-                        isUpdating={updatingEntryId === entry.id}
-                        onStatusChange={handleStatusChange}
-                        onRequestRate={setRateEntryId}
-                        actionError={
-                          actionError?.id === entry.id ? actionError.message : null
-                        }
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </LibrarySection>
+                updatingEntryId={updatingEntryId}
+                actionError={actionError}
+                onStatusChange={handleStatusChange}
+                onRequestRate={setRateEntryId}
+              />
             ))}
           </div>
         )}

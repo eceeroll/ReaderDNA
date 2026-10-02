@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import type { ReadStatus, UserLibraryEntry } from "../../api/library";
 import { Card } from "../ui/Card";
 import { FieldError } from "../ui/FieldError";
@@ -10,18 +11,23 @@ export function LibraryBookCard({
   onStatusChange,
   onRequestRate,
   actionError = null,
+  className,
 }: {
   entry: UserLibraryEntry;
   isUpdating: boolean;
   onStatusChange: (id: number, status: ReadStatus) => void;
   onRequestRate: (id: number) => void;
   actionError?: string | null;
+  className?: string;
 }) {
   return (
-    <Card variant="interactive" className="group flex h-full flex-col p-4!">
-      <BookCoverInfo book={entry.book} />
+    <Card
+      variant="interactive"
+      className={clsx("group flex h-full flex-col p-4!", className)}
+    >
+      <BookCoverInfo book={entry.book} compact />
 
-      <div className="mt-auto pt-4">
+      <div className="mt-auto pt-3">
         <LibraryMenu
           status={entry.status}
           disabled={isUpdating}
